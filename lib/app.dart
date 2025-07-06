@@ -38,7 +38,13 @@ class SleepApp extends StatelessWidget {
             localDataSource: context.read<LocalDataSource>(),
           ),
         ),
-        ChangeNotifierProvider<SleepProvider>(
+        ChangeNotifierProvider<UserProvider>(
+          create: (context) {
+            final userRepository = context.read<UserRepository>();
+            return UserProvider(userRepository: userRepository);
+          },
+        ),
+        ChangeNotifierProxyProvider<UserProvider, SleepProvider>(
           create: (context) {
             final sleepRepository = context.read<SleepRepository>();
             final userRepository = context.read<UserRepository>();
@@ -52,11 +58,9 @@ class SleepApp extends StatelessWidget {
               sleepRepository: sleepRepository,
             );
           },
-        ),
-        ChangeNotifierProvider<UserProvider>(
-          create: (context) {
-            final userRepository = context.read<UserRepository>();
-            return UserProvider(userRepository: userRepository);
+          update: (context, userProvider, sleepProvider) {
+            sleepProvider?.setUserProvider(userProvider);
+            return sleepProvider!;
           },
         ),
       ],

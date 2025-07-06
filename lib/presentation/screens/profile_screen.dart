@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 import '../widgets/achievement_card.dart';
+import 'notification_settings_screen.dart';
 import '../../core/themes/app_theme.dart';
 import '../../domain/entities/user_profile.dart';
 
@@ -20,9 +21,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: const Text('プロフィール'),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: _showSettingsDialog,
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              switch (value) {
+                case 'settings':
+                  _showSettingsDialog();
+                  break;
+                case 'notifications':
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationSettingsScreen(),
+                    ),
+                  );
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'settings',
+                child: ListTile(
+                  leading: Icon(Icons.settings),
+                  title: Text('基本設定'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'notifications',
+                child: ListTile(
+                  leading: Icon(Icons.notifications),
+                  title: Text('通知設定'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
           ),
         ],
       ),

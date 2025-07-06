@@ -5,6 +5,7 @@ import '../../domain/usecases/end_sleep_tracking_usecase.dart';
 import '../../domain/repositories/sleep_repository.dart';
 import '../../services/sensor_service.dart';
 import '../../services/permission_service.dart';
+import 'user_provider.dart';
 
 enum SleepTrackingState {
   idle,
@@ -19,6 +20,7 @@ class SleepProvider extends ChangeNotifier {
   final SleepRepository _sleepRepository;
   final SensorService _sensorService = SensorService();
   final PermissionService _permissionService = PermissionService();
+  UserProvider? _userProvider;
 
   SleepProvider({
     required StartSleepTrackingUseCase startSleepTracking,
@@ -28,6 +30,10 @@ class SleepProvider extends ChangeNotifier {
         _endSleepTracking = endSleepTracking,
         _sleepRepository = sleepRepository {
     _initialize();
+  }
+
+  void setUserProvider(UserProvider userProvider) {
+    _userProvider = userProvider;
   }
 
   SleepTrackingState _state = SleepTrackingState.idle;
@@ -122,6 +128,14 @@ class SleepProvider extends ChangeNotifier {
       }
 
       final endedSession = await _endSleepTracking.execute();
+      
+      if (endedSession != null && _userProvider != null) {
+        await _userProvider!.showSleepQualityNotification(
+          qualityScore: endedSession.qualityScore ?? 0.0,
+          sleepDuration: endedSession.duration ?? Duration.zero,
+        );
+      }
+      
       _currentSession = null;
       _state = SleepTrackingState.idle;
       _currentDuration = Duration.zero;

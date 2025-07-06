@@ -49,7 +49,8 @@ class DatabaseService {
         points INTEGER NOT NULL DEFAULT 0,
         achievements_json TEXT,
         created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL
+        updated_at INTEGER NOT NULL,
+        notification_settings_json TEXT
       )
     ''');
 

@@ -9,6 +9,7 @@ class UserProfile {
   final List<Achievement> achievements;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final NotificationSettings notificationSettings;
 
   UserProfile({
     required this.id,
@@ -19,11 +20,13 @@ class UserProfile {
     List<Achievement>? achievements,
     DateTime? createdAt,
     DateTime? updatedAt,
+    NotificationSettings? notificationSettings,
   })  : targetBedtime = targetBedtime ?? const TimeOfDay(hour: 23, minute: 0),
         targetWakeTime = targetWakeTime ?? const TimeOfDay(hour: 7, minute: 0),
         achievements = achievements ?? [],
         createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now();
+        updatedAt = updatedAt ?? DateTime.now(),
+        notificationSettings = notificationSettings ?? NotificationSettings();
 
   UserProfile copyWith({
     String? id,
@@ -34,6 +37,7 @@ class UserProfile {
     List<Achievement>? achievements,
     DateTime? createdAt,
     DateTime? updatedAt,
+    NotificationSettings? notificationSettings,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -44,6 +48,7 @@ class UserProfile {
       achievements: achievements ?? this.achievements,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
+      notificationSettings: notificationSettings ?? this.notificationSettings,
     );
   }
 }
@@ -75,6 +80,38 @@ class Achievement {
       iconPath: iconPath,
       unlockedAt: DateTime.now(),
       points: points,
+    );
+  }
+}
+
+class NotificationSettings {
+  final bool bedtimeReminderEnabled;
+  final int bedtimeReminderMinutes;
+  final bool wakeUpAlarmEnabled;
+  final bool sleepQualityNotificationEnabled;
+  final bool weeklyReportEnabled;
+
+  NotificationSettings({
+    this.bedtimeReminderEnabled = true,
+    this.bedtimeReminderMinutes = 30,
+    this.wakeUpAlarmEnabled = false,
+    this.sleepQualityNotificationEnabled = true,
+    this.weeklyReportEnabled = true,
+  });
+
+  NotificationSettings copyWith({
+    bool? bedtimeReminderEnabled,
+    int? bedtimeReminderMinutes,
+    bool? wakeUpAlarmEnabled,
+    bool? sleepQualityNotificationEnabled,
+    bool? weeklyReportEnabled,
+  }) {
+    return NotificationSettings(
+      bedtimeReminderEnabled: bedtimeReminderEnabled ?? this.bedtimeReminderEnabled,
+      bedtimeReminderMinutes: bedtimeReminderMinutes ?? this.bedtimeReminderMinutes,
+      wakeUpAlarmEnabled: wakeUpAlarmEnabled ?? this.wakeUpAlarmEnabled,
+      sleepQualityNotificationEnabled: sleepQualityNotificationEnabled ?? this.sleepQualityNotificationEnabled,
+      weeklyReportEnabled: weeklyReportEnabled ?? this.weeklyReportEnabled,
     );
   }
 }

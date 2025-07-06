@@ -10,6 +10,7 @@ class UserProfileModel {
   final String? achievementsJson;
   final int createdAtEpoch;
   final int updatedAtEpoch;
+  final String? notificationSettingsJson;
 
   UserProfileModel({
     required this.id,
@@ -20,6 +21,7 @@ class UserProfileModel {
     this.achievementsJson,
     required this.createdAtEpoch,
     required this.updatedAtEpoch,
+    this.notificationSettingsJson,
   });
 
   factory UserProfileModel.fromEntity(UserProfile entity) {
@@ -32,6 +34,7 @@ class UserProfileModel {
       achievementsJson: _achievementsToJson(entity.achievements),
       createdAtEpoch: entity.createdAt.millisecondsSinceEpoch,
       updatedAtEpoch: entity.updatedAt.millisecondsSinceEpoch,
+      notificationSettingsJson: _notificationSettingsToJson(entity.notificationSettings),
     );
   }
 
@@ -45,6 +48,7 @@ class UserProfileModel {
       achievements: _achievementsFromJson(achievementsJson),
       createdAt: DateTime.fromMillisecondsSinceEpoch(createdAtEpoch),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(updatedAtEpoch),
+      notificationSettings: _notificationSettingsFromJson(notificationSettingsJson),
     );
   }
 
@@ -58,6 +62,7 @@ class UserProfileModel {
       'achievements_json': achievementsJson,
       'created_at': createdAtEpoch,
       'updated_at': updatedAtEpoch,
+      'notification_settings_json': notificationSettingsJson,
     };
   }
 
@@ -71,6 +76,7 @@ class UserProfileModel {
       achievementsJson: map['achievements_json'] as String?,
       createdAtEpoch: map['created_at'] as int,
       updatedAtEpoch: map['updated_at'] as int,
+      notificationSettingsJson: map['notification_settings_json'] as String?,
     );
   }
 
@@ -109,5 +115,27 @@ class UserProfileModel {
         points: int.parse(parts[5]),
       );
     }).toList();
+  }
+
+  static String? _notificationSettingsToJson(NotificationSettings settings) {
+    return '${settings.bedtimeReminderEnabled ? 1 : 0}:'
+           '${settings.bedtimeReminderMinutes}:'
+           '${settings.wakeUpAlarmEnabled ? 1 : 0}:'
+           '${settings.sleepQualityNotificationEnabled ? 1 : 0}:'
+           '${settings.weeklyReportEnabled ? 1 : 0}';
+  }
+
+  static NotificationSettings _notificationSettingsFromJson(String? json) {
+    if (json == null || json.isEmpty) return NotificationSettings();
+    final parts = json.split(':');
+    if (parts.length != 5) return NotificationSettings();
+    
+    return NotificationSettings(
+      bedtimeReminderEnabled: parts[0] == '1',
+      bedtimeReminderMinutes: int.parse(parts[1]),
+      wakeUpAlarmEnabled: parts[2] == '1',
+      sleepQualityNotificationEnabled: parts[3] == '1',
+      weeklyReportEnabled: parts[4] == '1',
+    );
   }
 }
