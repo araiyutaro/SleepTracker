@@ -21,29 +21,56 @@ class SleepRepositoryImpl implements SleepRepository {
 
   @override
   Future<SleepSession> endSession(String sessionId) async {
-    final record = await _localDataSource.getSleepRecordById(sessionId);
-    if (record == null) {
-      throw Exception('Sleep session not found');
+    try {
+      final record = await _localDataSource.getSleepRecordById(sessionId);
+      if (record == null) {
+        // アクティブセッションから再取得を試行
+        final activeRecord = await _localDataSource.getActiveSleepRecord();
+        if (activeRecord == null || activeRecord.id != sessionId) {
+          throw Exception('Sleep session not found: $sessionId');
+        }
+        // アクティブセッションが見つかった場合、それを使用
+        final endTime = DateTime.now();
+        final duration = endTime.difference(
+          DateTime.fromMillisecondsSinceEpoch(activeRecord.startTimeEpoch),
+        );
+
+        final updatedRecord = SleepRecordModel(
+          id: activeRecord.id,
+          startTimeEpoch: activeRecord.startTimeEpoch,
+          endTimeEpoch: endTime.millisecondsSinceEpoch,
+          durationMinutes: duration.inMinutes,
+          qualityScore: _calculateQualityScore(duration),
+          movementsJson: activeRecord.movementsJson,
+          createdAtEpoch: activeRecord.createdAtEpoch,
+          sleepStagesJson: activeRecord.sleepStagesJson,
+        );
+
+        await _localDataSource.updateSleepRecord(updatedRecord);
+        return updatedRecord.toEntity();
+      }
+
+      final endTime = DateTime.now();
+      final duration = endTime.difference(
+        DateTime.fromMillisecondsSinceEpoch(record.startTimeEpoch),
+      );
+
+      final updatedRecord = SleepRecordModel(
+        id: record.id,
+        startTimeEpoch: record.startTimeEpoch,
+        endTimeEpoch: endTime.millisecondsSinceEpoch,
+        durationMinutes: duration.inMinutes,
+        qualityScore: _calculateQualityScore(duration),
+        movementsJson: record.movementsJson,
+        createdAtEpoch: record.createdAtEpoch,
+        sleepStagesJson: record.sleepStagesJson,
+      );
+
+      await _localDataSource.updateSleepRecord(updatedRecord);
+      return updatedRecord.toEntity();
+    } catch (e) {
+      throw Exception('Failed to end sleep session: $e');
     }
-
-    final endTime = DateTime.now();
-    final duration = endTime.difference(
-      DateTime.fromMillisecondsSinceEpoch(record.startTimeEpoch),
-    );
-
-    final updatedRecord = SleepRecordModel(
-      id: record.id,
-      startTimeEpoch: record.startTimeEpoch,
-      endTimeEpoch: endTime.millisecondsSinceEpoch,
-      durationMinutes: duration.inMinutes,
-      qualityScore: _calculateQualityScore(duration),
-      movementsJson: record.movementsJson,
-      createdAtEpoch: record.createdAtEpoch,
-      sleepStagesJson: record.sleepStagesJson,
-    );
-
-    await _localDataSource.updateSleepRecord(updatedRecord);
-    return updatedRecord.toEntity();
   }
 
   @override

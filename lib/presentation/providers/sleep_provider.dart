@@ -141,7 +141,9 @@ class SleepProvider extends ChangeNotifier {
         }
       }
 
+      debugPrint('Attempting to end sleep session with ID: ${_currentSession?.id}');
       final endedSession = await _endSleepTracking.execute();
+      debugPrint('Sleep session ended successfully: ${endedSession.id}');
       
       if (endedSession != null && _userProvider != null) {
         try {
