@@ -35,7 +35,8 @@ class DatabaseService {
         duration_minutes INTEGER,
         quality_score REAL,
         movements_json TEXT,
-        created_at INTEGER NOT NULL
+        created_at INTEGER NOT NULL,
+        sleep_stages_json TEXT
       )
     ''');
 

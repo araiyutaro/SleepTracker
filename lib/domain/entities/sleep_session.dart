@@ -6,6 +6,7 @@ class SleepSession {
   final double? qualityScore;
   final List<MovementData> movements;
   final DateTime createdAt;
+  final SleepStageData? sleepStages;
 
   SleepSession({
     required this.id,
@@ -15,6 +16,7 @@ class SleepSession {
     this.qualityScore,
     List<MovementData>? movements,
     DateTime? createdAt,
+    this.sleepStages,
   })  : movements = movements ?? [],
         createdAt = createdAt ?? DateTime.now();
 
@@ -36,6 +38,7 @@ class SleepSession {
     double? qualityScore,
     List<MovementData>? movements,
     DateTime? createdAt,
+    SleepStageData? sleepStages,
   }) {
     return SleepSession(
       id: id ?? this.id,
@@ -45,6 +48,7 @@ class SleepSession {
       qualityScore: qualityScore ?? this.qualityScore,
       movements: movements ?? this.movements,
       createdAt: createdAt ?? this.createdAt,
+      sleepStages: sleepStages ?? this.sleepStages,
     );
   }
 }
@@ -57,4 +61,22 @@ class MovementData {
     required this.timestamp,
     required this.intensity,
   });
+}
+
+class SleepStageData {
+  final double deepSleepPercentage;
+  final double lightSleepPercentage;
+  final double remSleepPercentage;
+  final double awakePercentage;
+  final int movementCount;
+
+  SleepStageData({
+    required this.deepSleepPercentage,
+    required this.lightSleepPercentage,
+    required this.remSleepPercentage,
+    required this.awakePercentage,
+    required this.movementCount,
+  });
+
+  double get totalSleep => deepSleepPercentage + lightSleepPercentage + remSleepPercentage;
 }

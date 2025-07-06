@@ -3,6 +3,8 @@ import '../../domain/entities/sleep_session.dart';
 import '../../domain/usecases/start_sleep_tracking_usecase.dart';
 import '../../domain/usecases/end_sleep_tracking_usecase.dart';
 import '../../domain/repositories/sleep_repository.dart';
+import '../../services/sensor_service.dart';
+import '../../services/permission_service.dart';
 
 enum SleepTrackingState {
   idle,
@@ -15,6 +17,8 @@ class SleepProvider extends ChangeNotifier {
   final StartSleepTrackingUseCase _startSleepTracking;
   final EndSleepTrackingUseCase _endSleepTracking;
   final SleepRepository _sleepRepository;
+  final SensorService _sensorService = SensorService();
+  final PermissionService _permissionService = PermissionService();
 
   SleepProvider({
     required StartSleepTrackingUseCase startSleepTracking,
@@ -74,6 +78,8 @@ class SleepProvider extends ChangeNotifier {
       _currentSession = await _startSleepTracking.execute();
       _state = SleepTrackingState.tracking;
       _startDurationTimer();
+      
+      await _sensorService.startMonitoring();
     } catch (e) {
       _state = SleepTrackingState.error;
       _errorMessage = e.toString();
@@ -87,6 +93,33 @@ class SleepProvider extends ChangeNotifier {
       _state = SleepTrackingState.loading;
       _errorMessage = null;
       notifyListeners();
+
+      await _sensorService.stopMonitoring();
+      
+      if (_currentSession != null) {
+        final movements = _sensorService.getMovementsForPeriod(
+          _currentSession!.startTime,
+          DateTime.now(),
+        );
+        
+        final analysisResult = _sensorService.analyzeSleepSession(
+          movements,
+          DateTime.now().difference(_currentSession!.startTime),
+        );
+        
+        final updatedSession = _currentSession!.copyWith(
+          movements: movements,
+          sleepStages: SleepStageData(
+            deepSleepPercentage: analysisResult.deepSleepPercentage,
+            lightSleepPercentage: analysisResult.lightSleepPercentage,
+            remSleepPercentage: analysisResult.remSleepPercentage,
+            awakePercentage: analysisResult.awakePercentage,
+            movementCount: analysisResult.movementCount,
+          ),
+        );
+        
+        await _sleepRepository.updateSession(updatedSession);
+      }
 
       final endedSession = await _endSleepTracking.execute();
       _currentSession = null;
@@ -132,5 +165,9 @@ class SleepProvider extends ChangeNotifier {
     final minutes = (duration.inMinutes % 60).toString().padLeft(2, '0');
     final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
     return '$hours:$minutes:$seconds';
+  }
+
+  Future<bool> requestSensorPermissions(BuildContext context) async {
+    return await _permissionService.handlePermissions(context);
   }
 }

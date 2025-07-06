@@ -8,6 +8,7 @@ class SleepRecordModel {
   final double? qualityScore;
   final String? movementsJson;
   final int createdAtEpoch;
+  final String? sleepStagesJson;
 
   SleepRecordModel({
     required this.id,
@@ -17,6 +18,7 @@ class SleepRecordModel {
     this.qualityScore,
     this.movementsJson,
     required this.createdAtEpoch,
+    this.sleepStagesJson,
   });
 
   factory SleepRecordModel.fromEntity(SleepSession entity) {
@@ -28,6 +30,7 @@ class SleepRecordModel {
       qualityScore: entity.qualityScore,
       movementsJson: _movementsToJson(entity.movements),
       createdAtEpoch: entity.createdAt.millisecondsSinceEpoch,
+      sleepStagesJson: _sleepStagesToJson(entity.sleepStages),
     );
   }
 
@@ -44,6 +47,7 @@ class SleepRecordModel {
       qualityScore: qualityScore,
       movements: _movementsFromJson(movementsJson),
       createdAt: DateTime.fromMillisecondsSinceEpoch(createdAtEpoch),
+      sleepStages: _sleepStagesFromJson(sleepStagesJson),
     );
   }
 
@@ -56,6 +60,7 @@ class SleepRecordModel {
       'quality_score': qualityScore,
       'movements_json': movementsJson,
       'created_at': createdAtEpoch,
+      'sleep_stages_json': sleepStagesJson,
     };
   }
 
@@ -68,6 +73,7 @@ class SleepRecordModel {
       qualityScore: map['quality_score'] as double?,
       movementsJson: map['movements_json'] as String?,
       createdAtEpoch: map['created_at'] as int,
+      sleepStagesJson: map['sleep_stages_json'] as String?,
     );
   }
 
@@ -87,5 +93,25 @@ class SleepRecordModel {
         intensity: double.parse(parts[1]),
       );
     }).toList();
+  }
+
+  static String? _sleepStagesToJson(SleepStageData? stages) {
+    if (stages == null) return null;
+    return '${stages.deepSleepPercentage}:${stages.lightSleepPercentage}:'
+           '${stages.remSleepPercentage}:${stages.awakePercentage}:${stages.movementCount}';
+  }
+
+  static SleepStageData? _sleepStagesFromJson(String? json) {
+    if (json == null || json.isEmpty) return null;
+    final parts = json.split(':');
+    if (parts.length != 5) return null;
+    
+    return SleepStageData(
+      deepSleepPercentage: double.parse(parts[0]),
+      lightSleepPercentage: double.parse(parts[1]),
+      remSleepPercentage: double.parse(parts[2]),
+      awakePercentage: double.parse(parts[3]),
+      movementCount: int.parse(parts[4]),
+    );
   }
 }

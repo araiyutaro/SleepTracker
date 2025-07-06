@@ -55,6 +55,10 @@ dependencies:
   
   # バックグラウンド処理
   workmanager: ^0.5.1
+  
+  # センサー
+  sensors_plus: ^3.0.3
+  permission_handler: ^10.4.3
 
 dev_dependencies:
   flutter_test:
