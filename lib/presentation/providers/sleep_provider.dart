@@ -85,7 +85,12 @@ class SleepProvider extends ChangeNotifier {
       _state = SleepTrackingState.tracking;
       _startDurationTimer();
       
-      await _sensorService.startMonitoring();
+      try {
+        await _sensorService.startMonitoring();
+      } catch (e) {
+        debugPrint('Failed to start sensor monitoring: $e');
+        // センサー監視の開始に失敗してもトラッキングは継続
+      }
     } catch (e) {
       _state = SleepTrackingState.error;
       _errorMessage = e.toString();
@@ -100,40 +105,53 @@ class SleepProvider extends ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      await _sensorService.stopMonitoring();
+      try {
+        await _sensorService.stopMonitoring();
+      } catch (e) {
+        debugPrint('Failed to stop sensor monitoring: $e');
+      }
       
       if (_currentSession != null) {
-        final movements = _sensorService.getMovementsForPeriod(
-          _currentSession!.startTime,
-          DateTime.now(),
-        );
-        
-        final analysisResult = _sensorService.analyzeSleepSession(
-          movements,
-          DateTime.now().difference(_currentSession!.startTime),
-        );
-        
-        final updatedSession = _currentSession!.copyWith(
-          movements: movements,
-          sleepStages: SleepStageData(
-            deepSleepPercentage: analysisResult.deepSleepPercentage,
-            lightSleepPercentage: analysisResult.lightSleepPercentage,
-            remSleepPercentage: analysisResult.remSleepPercentage,
-            awakePercentage: analysisResult.awakePercentage,
-            movementCount: analysisResult.movementCount,
-          ),
-        );
-        
-        await _sleepRepository.updateSession(updatedSession);
+        try {
+          final movements = _sensorService.getMovementsForPeriod(
+            _currentSession!.startTime,
+            DateTime.now(),
+          );
+          
+          final analysisResult = _sensorService.analyzeSleepSession(
+            movements,
+            DateTime.now().difference(_currentSession!.startTime),
+          );
+          
+          final updatedSession = _currentSession!.copyWith(
+            movements: movements,
+            sleepStages: SleepStageData(
+              deepSleepPercentage: analysisResult.deepSleepPercentage,
+              lightSleepPercentage: analysisResult.lightSleepPercentage,
+              remSleepPercentage: analysisResult.remSleepPercentage,
+              awakePercentage: analysisResult.awakePercentage,
+              movementCount: analysisResult.movementCount,
+            ),
+          );
+          
+          await _sleepRepository.updateSession(updatedSession);
+        } catch (e) {
+          debugPrint('Failed to analyze sleep session: $e');
+          // 分析に失敗してもセッション終了は継続
+        }
       }
 
       final endedSession = await _endSleepTracking.execute();
       
       if (endedSession != null && _userProvider != null) {
-        await _userProvider!.showSleepQualityNotification(
-          qualityScore: endedSession.qualityScore ?? 0.0,
-          sleepDuration: endedSession.duration ?? Duration.zero,
-        );
+        try {
+          await _userProvider!.showSleepQualityNotification(
+            qualityScore: endedSession.qualityScore ?? 0.0,
+            sleepDuration: endedSession.duration ?? Duration.zero,
+          );
+        } catch (e) {
+          debugPrint('Failed to show notification: $e');
+        }
       }
       
       _currentSession = null;
@@ -182,6 +200,11 @@ class SleepProvider extends ChangeNotifier {
   }
 
   Future<bool> requestSensorPermissions(BuildContext context) async {
-    return await _permissionService.handlePermissions(context);
+    try {
+      return await _permissionService.handlePermissions(context);
+    } catch (e) {
+      debugPrint('Failed to request sensor permissions: $e');
+      return false;
+    }
   }
 }

@@ -17,13 +17,12 @@ class SensorService {
   static const Duration _bufferDuration = Duration(seconds: 30);
   static const Duration _analysisInterval = Duration(minutes: 5);
 
-  Stream<AccelerometerEvent>? get accelerometerEvents => accelerometerEvents;
   List<MovementData> get recentMovements => List.unmodifiable(_movementBuffer);
 
   Future<void> startMonitoring() async {
     await stopMonitoring();
     
-    _accelerometerSubscription = accelerometerEvents?.listen((event) {
+    _accelerometerSubscription = accelerometerEventStream().listen((event) {
       final magnitude = _calculateMagnitude(event);
       if (magnitude > _movementThreshold) {
         final movement = MovementData(

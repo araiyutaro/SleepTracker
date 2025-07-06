@@ -17,9 +17,19 @@ class UserProvider extends ChangeNotifier {
   UserProfile? get userProfile => _userProfile;
 
   Future<void> _initialize() async {
-    await _notificationService.initialize();
-    await _loadUserProfile();
-    _scheduleNotifications();
+    try {
+      await _notificationService.initialize();
+    } catch (e) {
+      debugPrint('NotificationService initialization failed: $e');
+      // 通知サービスの初期化に失敗してもアプリを継続
+    }
+    
+    try {
+      await _loadUserProfile();
+      _scheduleNotifications();
+    } catch (e) {
+      debugPrint('UserProfile initialization failed: $e');
+    }
   }
 
   Future<void> _loadUserProfile() async {
@@ -76,24 +86,28 @@ class UserProvider extends ChangeNotifier {
   void _scheduleNotifications() {
     if (_userProfile == null) return;
 
-    final settings = _userProfile!.notificationSettings;
+    try {
+      final settings = _userProfile!.notificationSettings;
 
-    if (settings.bedtimeReminderEnabled) {
-      _notificationService.scheduleBedtimeReminder(
-        bedtime: _userProfile!.targetBedtime,
-        reminderMinutes: settings.bedtimeReminderMinutes,
-      );
-    }
+      if (settings.bedtimeReminderEnabled) {
+        _notificationService.scheduleBedtimeReminder(
+          bedtime: _userProfile!.targetBedtime,
+          reminderMinutes: settings.bedtimeReminderMinutes,
+        );
+      }
 
-    if (settings.wakeUpAlarmEnabled) {
-      _notificationService.scheduleWakeUpAlarm(
-        wakeTime: _userProfile!.targetWakeTime,
-        enabled: true,
-      );
-    }
+      if (settings.wakeUpAlarmEnabled) {
+        _notificationService.scheduleWakeUpAlarm(
+          wakeTime: _userProfile!.targetWakeTime,
+          enabled: true,
+        );
+      }
 
-    if (settings.weeklyReportEnabled) {
-      _notificationService.scheduleWeeklyReport();
+      if (settings.weeklyReportEnabled) {
+        _notificationService.scheduleWeeklyReport();
+      }
+    } catch (e) {
+      debugPrint('Failed to schedule notifications: $e');
     }
   }
 
@@ -101,11 +115,15 @@ class UserProvider extends ChangeNotifier {
     required double qualityScore,
     required Duration sleepDuration,
   }) async {
-    if (_userProfile?.notificationSettings.sleepQualityNotificationEnabled == true) {
-      await _notificationService.showSleepQualityNotification(
-        qualityScore: qualityScore,
-        sleepDuration: sleepDuration,
-      );
+    try {
+      if (_userProfile?.notificationSettings.sleepQualityNotificationEnabled == true) {
+        await _notificationService.showSleepQualityNotification(
+          qualityScore: qualityScore,
+          sleepDuration: sleepDuration,
+        );
+      }
+    } catch (e) {
+      debugPrint('Failed to show sleep quality notification: $e');
     }
   }
 }
