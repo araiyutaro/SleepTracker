@@ -22,7 +22,7 @@ class SensorService {
   Future<void> startMonitoring() async {
     await stopMonitoring();
     
-    _accelerometerSubscription = accelerometerEventStream().listen((event) {
+    _accelerometerSubscription = accelerometerEvents.listen((event) {
       final magnitude = _calculateMagnitude(event);
       if (magnitude > _movementThreshold) {
         final movement = MovementData(
