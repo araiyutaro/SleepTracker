@@ -20,12 +20,29 @@ class LocalDataSource {
 
   Future<void> updateSleepRecord(SleepRecordModel record) async {
     final db = await _databaseService.database;
-    await db.update(
-      'sleep_records',
-      record.toMap(),
-      where: 'id = ?',
-      whereArgs: [record.id],
-    );
+    
+    await db.transaction((txn) async {
+      final existingRecords = await txn.query(
+        'sleep_records',
+        where: 'id = ?',
+        whereArgs: [record.id],
+      );
+      
+      if (existingRecords.isEmpty) {
+        throw Exception('Sleep record not found for update: ${record.id}');
+      }
+      
+      final affectedRows = await txn.update(
+        'sleep_records',
+        record.toMap(),
+        where: 'id = ?',
+        whereArgs: [record.id],
+      );
+      
+      if (affectedRows == 0) {
+        throw Exception('Failed to update sleep record: ${record.id}');
+      }
+    });
   }
 
   Future<SleepRecordModel?> getSleepRecordById(String id) async {
@@ -44,7 +61,7 @@ class LocalDataSource {
     final db = await _databaseService.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'sleep_records',
-      where: 'end_time IS NULL',
+      where: 'end_time IS NULL OR end_time = 0',
       orderBy: 'start_time DESC',
       limit: 1,
     );

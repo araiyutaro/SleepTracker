@@ -39,6 +39,7 @@ class SleepRepositoryImpl implements SleepRepository {
       qualityScore: _calculateQualityScore(duration),
       movementsJson: record.movementsJson,
       createdAtEpoch: record.createdAtEpoch,
+      sleepStagesJson: record.sleepStagesJson,
     );
 
     await _localDataSource.updateSleepRecord(updatedRecord);

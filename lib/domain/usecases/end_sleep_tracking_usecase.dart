@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import '../entities/sleep_session.dart';
 import '../repositories/sleep_repository.dart';
 import '../repositories/user_repository.dart';
@@ -17,9 +18,19 @@ class EndSleepTrackingUseCase {
       throw Exception('アクティブな睡眠記録がありません');
     }
 
-    final endedSession = await _sleepRepository.endSession(activeSession.id);
+    SleepSession endedSession;
+    try {
+      endedSession = await _sleepRepository.endSession(activeSession.id);
+    } catch (e) {
+      throw Exception('睡眠記録の終了に失敗しました: $e');
+    }
     
-    await _calculateAndAddPoints(endedSession);
+    try {
+      await _calculateAndAddPoints(endedSession);
+    } catch (e) {
+      // ポイント計算に失敗してもセッション終了は成功とする
+      debugPrint('Failed to calculate points: $e');
+    }
     
     return endedSession;
   }

@@ -111,6 +111,7 @@ class SleepProvider extends ChangeNotifier {
         debugPrint('Failed to stop sensor monitoring: $e');
       }
       
+      // センサー分析データの準備（データベース更新は後でendSessionで一度だけ行う）
       if (_currentSession != null) {
         try {
           final movements = _sensorService.getMovementsForPeriod(
@@ -123,7 +124,8 @@ class SleepProvider extends ChangeNotifier {
             DateTime.now().difference(_currentSession!.startTime),
           );
           
-          final updatedSession = _currentSession!.copyWith(
+          // メモリ上で更新されたセッションを作成（まだDBには保存しない）
+          _currentSession = _currentSession!.copyWith(
             movements: movements,
             sleepStages: SleepStageData(
               deepSleepPercentage: analysisResult.deepSleepPercentage,
@@ -133,8 +135,6 @@ class SleepProvider extends ChangeNotifier {
               movementCount: analysisResult.movementCount,
             ),
           );
-          
-          await _sleepRepository.updateSession(updatedSession);
         } catch (e) {
           debugPrint('Failed to analyze sleep session: $e');
           // 分析に失敗してもセッション終了は継続
