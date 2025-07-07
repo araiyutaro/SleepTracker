@@ -80,7 +80,10 @@ class HomeScreen extends StatelessWidget {
                     ...sleepProvider.recentSessions.take(3).map(
                           (session) => Padding(
                             padding: const EdgeInsets.only(bottom: 12),
-                            child: RecentSleepCard(session: session),
+                            child: RecentSleepCard(
+                              session: session,
+                              onDelete: () => sleepProvider.deleteSession(session.id),
+                            ),
                           ),
                         ),
                   ],

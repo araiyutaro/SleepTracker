@@ -6,10 +6,12 @@ import 'sleep_stages_chart.dart';
 
 class RecentSleepCard extends StatelessWidget {
   final SleepSession session;
+  final VoidCallback? onDelete;
 
   const RecentSleepCard({
     Key? key,
     required this.session,
+    this.onDelete,
   }) : super(key: key);
 
   @override
@@ -21,10 +23,12 @@ class RecentSleepCard extends StatelessWidget {
       child: InkWell(
         onTap: session.sleepStages != null ? () => _showDetailDialog(context) : null,
         borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
+        child: Stack(
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(16.0, 16.0, onDelete != null ? 56.0 : 16.0, 16.0),
+              child: Row(
+                children: [
               Container(
                 width: 60,
                 height: 60,
@@ -108,8 +112,27 @@ class RecentSleepCard extends StatelessWidget {
                   ],
                 ],
               ),
-            ],
-          ),
+                ],
+              ),
+            ),
+            if (onDelete != null)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.delete_outline,
+                    color: Colors.grey[600],
+                    size: 20,
+                  ),
+                  onPressed: () => _showDeleteConfirmDialog(context),
+                  style: IconButton.styleFrom(
+                    minimumSize: const Size(32, 32),
+                    padding: EdgeInsets.zero,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -162,6 +185,32 @@ class RecentSleepCard extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  void _showDeleteConfirmDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('睡眠記録を削除'),
+        content: const Text('この睡眠記録を削除しますか？\nこの操作は取り消せません。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              onDelete?.call();
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: AppTheme.errorColor,
+            ),
+            child: const Text('削除'),
+          ),
+        ],
+      ),
     );
   }
 }

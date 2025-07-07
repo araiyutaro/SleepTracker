@@ -183,6 +183,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
           padding: const EdgeInsets.only(bottom: 12),
           child: RecentSleepCard(
             session: sessionsForSelectedDay[index],
+            onDelete: () async {
+              final sleepProvider = context.read<SleepProvider>();
+              await sleepProvider.deleteSession(sessionsForSelectedDay[index].id);
+              _loadSleepHistory();
+            },
           ),
         );
       },

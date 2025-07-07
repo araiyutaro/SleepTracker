@@ -209,4 +209,18 @@ class SleepProvider extends ChangeNotifier {
       return false;
     }
   }
+
+  Future<void> deleteSession(String sessionId) async {
+    try {
+      debugPrint('Deleting sleep session: $sessionId');
+      await _sleepRepository.deleteSession(sessionId);
+      debugPrint('Sleep session deleted successfully');
+      
+      await loadRecentSessions();
+    } catch (e) {
+      debugPrint('Failed to delete sleep session: $e');
+      _errorMessage = 'セッションの削除に失敗しました: $e';
+      notifyListeners();
+    }
+  }
 }
