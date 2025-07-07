@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../providers/user_provider.dart';
+import '../providers/sleep_provider.dart';
 import '../widgets/achievement_card.dart';
 import 'notification_settings_screen.dart';
 import '../../core/themes/app_theme.dart';
 import '../../domain/entities/user_profile.dart';
+import '../../services/export_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -34,6 +37,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   );
                   break;
+                case 'export':
+                  _showExportDialog();
+                  break;
               }
             },
             itemBuilder: (context) => [
@@ -50,6 +56,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: ListTile(
                   leading: Icon(Icons.notifications),
                   title: Text('通知設定'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'export',
+                child: ListTile(
+                  leading: Icon(Icons.download),
+                  title: Text('データエクスポート'),
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
@@ -365,5 +379,91 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       },
     );
+  }
+
+  void _showExportDialog() {
+    final sleepProvider = context.read<SleepProvider>();
+    final exportService = ExportService(sleepRepository: sleepProvider.sleepRepository);
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('データエクスポート'),
+        content: const Text('睡眠データをエクスポートする形式を選択してください'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await _exportData(exportService, 'csv');
+            },
+            child: const Text('CSV'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await _exportData(exportService, 'json');
+            },
+            child: const Text('JSON'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await _exportData(exportService, 'text');
+            },
+            child: const Text('テキスト'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _exportData(ExportService exportService, String format) async {
+    try {
+      final now = DateTime.now();
+      final dateFormat = DateFormat('yyyyMMdd_HHmmss');
+      String content;
+      String fileName;
+
+      switch (format) {
+        case 'csv':
+          content = await exportService.exportToCSV();
+          fileName = 'sleep_data_${dateFormat.format(now)}.csv';
+          break;
+        case 'json':
+          content = await exportService.exportToJSON();
+          fileName = 'sleep_data_${dateFormat.format(now)}.json';
+          break;
+        case 'text':
+          content = await exportService.exportToText();
+          fileName = 'sleep_data_${dateFormat.format(now)}.txt';
+          break;
+        default:
+          throw Exception('Unsupported format: $format');
+      }
+
+      final file = await exportService.saveToFile(content, fileName);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('データをエクスポートしました: ${file.path}'),
+            backgroundColor: AppTheme.successColor,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('エクスポートに失敗しました: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    }
   }
 }

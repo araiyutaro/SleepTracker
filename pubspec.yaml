@@ -60,6 +60,9 @@ dependencies:
   # センサー
   sensors_plus: ^3.0.3
   permission_handler: ^10.4.3
+  
+  # ファイル操作
+  path_provider: ^2.1.1
 
 dev_dependencies:
   flutter_test:
