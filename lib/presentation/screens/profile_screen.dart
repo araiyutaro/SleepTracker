@@ -5,6 +5,7 @@ import '../providers/user_provider.dart';
 import '../providers/sleep_provider.dart';
 import '../widgets/achievement_card.dart';
 import 'notification_settings_screen.dart';
+import 'alarm_settings_screen.dart';
 import '../../core/themes/app_theme.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../services/export_service.dart';
@@ -40,6 +41,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 case 'export':
                   _showExportDialog();
                   break;
+                case 'alarm':
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AlarmSettingsScreen(),
+                    ),
+                  );
+                  break;
               }
             },
             itemBuilder: (context) => [
@@ -64,6 +72,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: ListTile(
                   leading: Icon(Icons.download),
                   title: Text('データエクスポート'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'alarm',
+                child: ListTile(
+                  leading: Icon(Icons.alarm),
+                  title: Text('スマートアラーム'),
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
