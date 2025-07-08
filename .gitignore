@@ -42,3 +42,20 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Firebase/GCP
+# Keep config files but exclude generated and cache files
+functions/node_modules/
+functions/lib/
+functions/.firebase/
+firebase-debug.log
+firestore-debug.log
+functions-debug.log
+
+# Service account keys
+*.json
+!firebase.json
+!firestore.rules
+!firestore.indexes.json
+!functions/package.json
+!functions/tsconfig.json

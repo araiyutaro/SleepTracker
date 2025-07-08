@@ -4,6 +4,7 @@ import 'core/themes/app_theme.dart';
 import 'presentation/screens/splash_screen.dart';
 import 'presentation/providers/sleep_provider.dart';
 import 'presentation/providers/user_provider.dart';
+import 'presentation/providers/serverless_analytics_provider.dart';
 import 'domain/repositories/sleep_repository.dart';
 import 'domain/repositories/user_repository.dart';
 import 'data/repositories/sleep_repository_impl.dart';
@@ -62,6 +63,9 @@ class SleepApp extends StatelessWidget {
             sleepProvider?.setUserProvider(userProvider);
             return sleepProvider!;
           },
+        ),
+        ChangeNotifierProvider<ServerlessAnalyticsProvider>(
+          create: (context) => ServerlessAnalyticsProvider(),
         ),
       ],
       child: MaterialApp(

@@ -48,6 +48,12 @@ dependencies:
   
   # ユーティリティ
   intl: ^0.18.1
+  
+  # Firebase/GCP（Dart 2.19.4対応）
+  firebase_core: ^2.10.0
+  firebase_auth: ^4.6.3
+  cloud_firestore: ^4.7.1
+  cloud_functions: ^4.3.0
   uuid: ^3.0.7
   
   # 通知
