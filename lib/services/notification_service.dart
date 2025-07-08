@@ -11,6 +11,9 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
   bool _isInitialized = false;
 
+  // アラームサービスから使用するためのgetter
+  FlutterLocalNotificationsPlugin get flutterLocalNotificationsPlugin => _notifications;
+
   Future<void> initialize() async {
     if (_isInitialized) return;
 
