@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'history_screen.dart';
-import 'statistics_screen.dart';
+import 'sleep_analytics_screen.dart';
 import 'profile_screen.dart';
 import '../../core/themes/app_theme.dart';
 
@@ -18,7 +18,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = const [
     HomeScreen(),
     HistoryScreen(),
-    StatisticsScreen(),
+    SleepAnalyticsScreen(),
     ProfileScreen(),
   ];
 
@@ -49,8 +49,8 @@ class _MainScreenState extends State<MainScreen> {
             label: '履歴',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            label: '統計',
+            icon: Icon(Icons.analytics),
+            label: '分析',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

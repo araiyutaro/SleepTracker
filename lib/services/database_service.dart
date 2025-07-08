@@ -21,7 +21,7 @@ class DatabaseService {
 
       return await openDatabase(
         path,
-        version: 1,
+        version: 2,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onOpen: (db) async {
@@ -71,6 +71,56 @@ class DatabaseService {
       await db.execute('''
         CREATE INDEX IF NOT EXISTS idx_sleep_records_created_at ON sleep_records(created_at);
       ''');
+
+      // 日次集計データテーブル
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS daily_sleep_aggregates (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          date TEXT NOT NULL,
+          sleep_duration_minutes INTEGER,
+          sleep_quality REAL,
+          bedtime_hour INTEGER,
+          bedtime_minute INTEGER,
+          wake_time_hour INTEGER,
+          wake_time_minute INTEGER,
+          movement_count INTEGER,
+          deep_sleep_percentage REAL,
+          light_sleep_percentage REAL,
+          rem_sleep_percentage REAL,
+          awake_percentage REAL,
+          day_type TEXT NOT NULL,
+          created_at INTEGER NOT NULL,
+          UNIQUE(user_id, date)
+        )
+      ''');
+
+      // 週次集計データテーブル
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS weekly_sleep_aggregates (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          week_start_date TEXT NOT NULL,
+          avg_sleep_duration REAL,
+          avg_sleep_quality REAL,
+          consistency_score REAL,
+          weekday_avg_duration REAL,
+          weekend_avg_duration REAL,
+          social_jetlag_minutes INTEGER,
+          created_at INTEGER NOT NULL,
+          UNIQUE(user_id, week_start_date)
+        )
+      ''');
+
+      // 集計データのインデックス
+      await db.execute('''
+        CREATE INDEX IF NOT EXISTS idx_daily_aggregates_user_date ON daily_sleep_aggregates(user_id, date);
+      ''');
+
+      await db.execute('''
+        CREATE INDEX IF NOT EXISTS idx_weekly_aggregates_user_week ON weekly_sleep_aggregates(user_id, week_start_date);
+      ''');
+
     } catch (e) {
       print('Table creation failed: $e');
       rethrow;
@@ -78,7 +128,57 @@ class DatabaseService {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // 将来のバージョンアップ用
+    // バージョン1→2: 分析用テーブルを追加
+    if (oldVersion < 2) {
+      // 日次集計データテーブル
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS daily_sleep_aggregates (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          date TEXT NOT NULL,
+          sleep_duration_minutes INTEGER,
+          sleep_quality REAL,
+          bedtime_hour INTEGER,
+          bedtime_minute INTEGER,
+          wake_time_hour INTEGER,
+          wake_time_minute INTEGER,
+          movement_count INTEGER,
+          deep_sleep_percentage REAL,
+          light_sleep_percentage REAL,
+          rem_sleep_percentage REAL,
+          awake_percentage REAL,
+          day_type TEXT NOT NULL,
+          created_at INTEGER NOT NULL,
+          UNIQUE(user_id, date)
+        )
+      ''');
+
+      // 週次集計データテーブル
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS weekly_sleep_aggregates (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          week_start_date TEXT NOT NULL,
+          avg_sleep_duration REAL,
+          avg_sleep_quality REAL,
+          consistency_score REAL,
+          weekday_avg_duration REAL,
+          weekend_avg_duration REAL,
+          social_jetlag_minutes INTEGER,
+          created_at INTEGER NOT NULL,
+          UNIQUE(user_id, week_start_date)
+        )
+      ''');
+
+      // 集計データのインデックス
+      await db.execute('''
+        CREATE INDEX IF NOT EXISTS idx_daily_aggregates_user_date ON daily_sleep_aggregates(user_id, date);
+      ''');
+
+      await db.execute('''
+        CREATE INDEX IF NOT EXISTS idx_weekly_aggregates_user_week ON weekly_sleep_aggregates(user_id, week_start_date);
+      ''');
+    }
   }
 
   Future<void> close() async {
