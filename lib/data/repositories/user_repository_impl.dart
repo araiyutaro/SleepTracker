@@ -17,9 +17,8 @@ class UserRepositoryImpl implements UserRepository {
   Future<UserProfile?> getUserProfile() async {
     final model = await _localDataSource.getUserProfile(_defaultUserId);
     if (model == null) {
-      final defaultProfile = UserProfile(id: _defaultUserId);
-      await saveUserProfile(defaultProfile);
-      return defaultProfile;
+      // プロファイルが存在しない場合はnullを返す（オンボーディング未完了）
+      return null;
     }
     return model.toEntity();
   }

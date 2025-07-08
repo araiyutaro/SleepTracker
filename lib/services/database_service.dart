@@ -21,7 +21,7 @@ class DatabaseService {
 
       return await openDatabase(
         path,
-        version: 2,
+        version: 3,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onOpen: (db) async {
@@ -53,14 +53,29 @@ class DatabaseService {
       await db.execute('''
         CREATE TABLE IF NOT EXISTS user_profiles (
           id TEXT PRIMARY KEY,
+          nickname TEXT,
+          age_group TEXT,
+          gender TEXT,
+          occupation TEXT,
           target_sleep_hours REAL NOT NULL,
           target_bedtime TEXT NOT NULL,
           target_wake_time TEXT NOT NULL,
+          weekday_bedtime TEXT,
+          weekday_wake_time TEXT,
+          weekend_bedtime TEXT,
+          weekend_wake_time TEXT,
+          sleep_concerns_json TEXT,
+          caffeine_habit TEXT,
+          alcohol_habit TEXT,
+          exercise_habit TEXT,
+          phone_usage_time TEXT,
+          phone_usage_content_json TEXT,
           points INTEGER NOT NULL DEFAULT 0,
           achievements_json TEXT,
           created_at INTEGER NOT NULL,
           updated_at INTEGER NOT NULL,
-          notification_settings_json TEXT
+          notification_settings_json TEXT,
+          is_onboarding_completed INTEGER NOT NULL DEFAULT 0
         )
       ''');
 
@@ -178,6 +193,26 @@ class DatabaseService {
       await db.execute('''
         CREATE INDEX IF NOT EXISTS idx_weekly_aggregates_user_week ON weekly_sleep_aggregates(user_id, week_start_date);
       ''');
+    }
+    
+    // バージョン2→3: オンボーディング関連カラムを追加
+    if (oldVersion < 3) {
+      // user_profilesテーブルにオンボーディング関連カラムを追加
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN nickname TEXT');
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN age_group TEXT');
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN gender TEXT');
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN occupation TEXT');
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN weekday_bedtime TEXT');
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN weekday_wake_time TEXT');
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN weekend_bedtime TEXT');
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN weekend_wake_time TEXT');
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN sleep_concerns_json TEXT');
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN caffeine_habit TEXT');
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN alcohol_habit TEXT');
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN exercise_habit TEXT');
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN phone_usage_time TEXT');
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN phone_usage_content_json TEXT');
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN is_onboarding_completed INTEGER NOT NULL DEFAULT 0');
     }
   }
 
