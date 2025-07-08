@@ -10,11 +10,14 @@ class UserProvider extends ChangeNotifier {
 
   UserProvider({
     required UserRepository userRepository,
-  }) : _userRepository = userRepository {
-    _initialize();
-  }
+  }) : _userRepository = userRepository;
 
   UserProfile? get userProfile => _userProfile;
+  UserProfile? get profile => _userProfile;
+
+  Future<void> initialize() async {
+    await _initialize();
+  }
 
   Future<void> _initialize() async {
     try {
@@ -125,5 +128,12 @@ class UserProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('Failed to show sleep quality notification: $e');
     }
+  }
+
+  Future<void> updateProfile(UserProfile profile) async {
+    await _userRepository.saveUserProfile(profile);
+    _userProfile = profile;
+    _scheduleNotifications();
+    notifyListeners();
   }
 }

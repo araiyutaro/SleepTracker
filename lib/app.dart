@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/themes/app_theme.dart';
-import 'presentation/screens/main_screen.dart';
+import 'presentation/screens/splash_screen.dart';
 import 'presentation/providers/sleep_provider.dart';
 import 'presentation/providers/user_provider.dart';
 import 'domain/repositories/sleep_repository.dart';
@@ -69,7 +69,7 @@ class SleepApp extends StatelessWidget {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
-        home: const MainScreen(),
+        home: const SplashScreen(),
         debugShowCheckedModeBanner: false,
       ),
     );
