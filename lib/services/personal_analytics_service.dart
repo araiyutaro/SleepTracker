@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 import '../domain/entities/daily_aggregate_data.dart';
 import '../domain/entities/sleep_statistics.dart';
 import '../domain/entities/user_profile.dart';
-import '../domain/entities/sleep_record.dart';
+import '../domain/entities/sleep_session.dart';
 import 'database_service.dart';
 
 /// 個人分析サービス
@@ -344,16 +344,23 @@ class PersonalAnalyticsService {
   }
 
   /// 睡眠セッションから日次集計データを生成して保存
-  Future<void> processSleepSessionAggregate(SleepRecord sleepRecord) async {
-    if (sleepRecord.endTime == null) return;
+  Future<void> processSleepSessionAggregate(SleepSession sleepSession) async {
+    if (sleepSession.endTime == null) return;
     
     final aggregateData = DailyAggregateData.fromSleepSession(
       userId: 'default_user', // 実際のユーザーIDに置き換え
-      date: DateTime.fromMillisecondsSinceEpoch(sleepRecord.startTime),
-      sleepDuration: sleepRecord.duration!,
-      sleepQuality: sleepRecord.qualityScore ?? 0.0,
-      bedtime: TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(sleepRecord.startTime)),
-      wakeTime: TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(sleepRecord.endTime!)),
+      date: sleepSession.startTime,
+      sleepDuration: sleepSession.calculatedDuration,
+      sleepQuality: sleepSession.qualityScore ?? 0.0,
+      bedtime: TimeOfDay.fromDateTime(sleepSession.startTime),
+      wakeTime: TimeOfDay.fromDateTime(sleepSession.endTime!),
+      movementCount: sleepSession.movements.length,
+      sleepStagePercentages: sleepSession.sleepStages != null ? {
+        'deep': sleepSession.sleepStages!.deepSleepPercentage,
+        'light': sleepSession.sleepStages!.lightSleepPercentage,
+        'rem': sleepSession.sleepStages!.remSleepPercentage,
+        'awake': sleepSession.sleepStages!.awakePercentage,
+      } : null,
     );
 
     await saveDailyAggregate(aggregateData);
@@ -383,17 +390,12 @@ class PersonalAnalyticsService {
 
   /// ユーザープロファイルを取得
   Future<UserProfile?> _getUserProfile(String userId) async {
-    final db = await _databaseService.database;
-    
-    final result = await db.query(
-      'user_profiles',
-      where: 'id = ?',
-      whereArgs: [userId],
-      limit: 1,
+    // TODO: 実際のユーザープロファイル取得の実装
+    // 現在はダミーデータを返す
+    return UserProfile(
+      id: userId,
+      targetSleepHours: 8.0,
+      phoneUsageTime: '30分～1時間',
     );
-
-    if (result.isEmpty) return null;
-    
-    return UserProfile.fromMap(result.first);
   }
 }
