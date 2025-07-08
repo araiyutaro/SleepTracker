@@ -71,7 +71,7 @@ class _OnboardingBasicInfoScreenState extends State<OnboardingBasicInfoScreen> {
           
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.fromLTRB(24.0, 16.0, 24.0, 24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -88,37 +88,37 @@ class _OnboardingBasicInfoScreenState extends State<OnboardingBasicInfoScreen> {
                       color: Colors.grey[600],
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
 
                   // 年齢グループ選択
                   _buildSectionTitle('年齢', isRequired: true),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   _buildSingleChoiceSection(_ageGroups, _selectedAgeGroup, (value) {
                     setState(() {
                       _selectedAgeGroup = value;
                     });
                   }),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 20),
 
                   // 性別選択
                   _buildSectionTitle('性別', isRequired: true),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   _buildSingleChoiceSection(_genders, _selectedGender, (value) {
                     setState(() {
                       _selectedGender = value;
                     });
                   }),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 20),
 
                   // 職業選択
                   _buildSectionTitle('職業', isRequired: false),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   _buildSingleChoiceSection(_occupations, _selectedOccupation, (value) {
                     setState(() {
                       _selectedOccupation = value;
                     });
                   }),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 80), // ボタン分の余裕を追加
                 ],
               ),
             ),

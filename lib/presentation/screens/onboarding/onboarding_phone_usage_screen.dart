@@ -84,7 +84,7 @@ class _OnboardingPhoneUsageScreenState extends State<OnboardingPhoneUsageScreen>
           
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.fromLTRB(24.0, 16.0, 24.0, 24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -101,21 +101,21 @@ class _OnboardingPhoneUsageScreenState extends State<OnboardingPhoneUsageScreen>
                       color: Colors.grey[600],
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
 
                   // 利用時間
                   _buildSectionTitle('就寝前のスマホ利用時間', isRequired: true),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   _buildSingleChoiceSection(_usageTimeOptions, _phoneUsageTime, (value) {
                     setState(() {
                       _phoneUsageTime = value;
                     });
                   }),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 20),
 
                   // 利用コンテンツ
                   _buildSectionTitle('就寝前にスマホで主にすること', isRequired: true),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Text(
                     '複数選択できます',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -128,7 +128,7 @@ class _OnboardingPhoneUsageScreenState extends State<OnboardingPhoneUsageScreen>
                       _selectedUsageContent = content;
                     });
                   }),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 80), // ボタン分の余裕を追加
                 ],
               ),
             ),

@@ -88,7 +88,7 @@ class _OnboardingSleepHabitsScreenState extends State<OnboardingSleepHabitsScree
           
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.fromLTRB(24.0, 16.0, 24.0, 24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -105,65 +105,65 @@ class _OnboardingSleepHabitsScreenState extends State<OnboardingSleepHabitsScree
                       color: Colors.grey[600],
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
 
                   // 就寝・起床時刻
                   _buildSectionTitle('普段の就寝・起床時刻', isRequired: true),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   _buildTimeSection('平日', _weekdayBedtime, _weekdayWakeTime, (bedtime, wakeTime) {
                     setState(() {
                       _weekdayBedtime = bedtime;
                       _weekdayWakeTime = wakeTime;
                     });
                   }),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   _buildTimeSection('休日', _weekendBedtime, _weekendWakeTime, (bedtime, wakeTime) {
                     setState(() {
                       _weekendBedtime = bedtime;
                       _weekendWakeTime = wakeTime;
                     });
                   }),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
 
                   // 睡眠の悩み
                   _buildSectionTitle('睡眠に関する主な悩み', isRequired: true),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   _buildMultiChoiceSection(_sleepConcerns, _selectedConcerns, (concerns) {
                     setState(() {
                       _selectedConcerns = concerns;
                     });
                   }),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 20),
 
                   // カフェイン摂取習慣
                   _buildSectionTitle('カフェイン摂取習慣', isRequired: false),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   _buildSingleChoiceSection(_habitOptions, _caffeineHabit, (value) {
                     setState(() {
                       _caffeineHabit = value;
                     });
                   }),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 20),
 
                   // アルコール摂取習慣
                   _buildSectionTitle('アルコール摂取習慣', isRequired: false),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   _buildSingleChoiceSection(_habitOptions, _alcoholHabit, (value) {
                     setState(() {
                       _alcoholHabit = value;
                     });
                   }),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 20),
 
                   // 運動習慣
                   _buildSectionTitle('運動習慣', isRequired: false),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   _buildSingleChoiceSection(_exerciseOptions, _exerciseHabit, (value) {
                     setState(() {
                       _exerciseHabit = value;
                     });
                   }),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 80), // ボタン分の余裕を追加
                 ],
               ),
             ),

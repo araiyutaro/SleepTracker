@@ -22,9 +22,15 @@ class _OnboardingWelcomeScreenState extends State<OnboardingWelcomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
-          child: Column(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height - 
+                         MediaQuery.of(context).padding.top - 
+                         MediaQuery.of(context).padding.bottom,
+            ),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 40),
@@ -124,6 +130,7 @@ class _OnboardingWelcomeScreenState extends State<OnboardingWelcomeScreen> {
               ),
               const SizedBox(height: 20),
             ],
+            ),
           ),
         ),
       ),

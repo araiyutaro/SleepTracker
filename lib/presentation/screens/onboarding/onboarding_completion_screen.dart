@@ -58,7 +58,7 @@ class _OnboardingCompletionScreenState extends State<OnboardingCompletionScreen>
           ),
           
           Expanded(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
               child: Column(
                 children: [
@@ -112,7 +112,7 @@ class _OnboardingCompletionScreenState extends State<OnboardingCompletionScreen>
                   // サマリー表示
                   _buildSummaryCard(),
                   
-                  const Spacer(),
+                  const SizedBox(height: 40),
                   
                   // アプリを始めるボタン
                   SizedBox(
