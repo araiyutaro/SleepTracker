@@ -1,9 +1,8 @@
-// import 'package:firebase_core/firebase_core.dart';  // iOS対応のため一時無効化
-// import 'package:firebase_auth/firebase_auth.dart';  // iOS対応のため一時無効化
-// import 'package:cloud_firestore/cloud_firestore.dart';  // iOS対応のため一時無効化
+import 'package:firebase_core/firebase_core.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-// import '../firebase_options.dart';  // iOS対応のため一時無効化
+import '../firebase_options.dart';
+import 'analytics_service.dart';
 
 /// Firebase サービスクラス
 /// Google Cloud Platform との通信を担当
@@ -15,19 +14,21 @@ class FirebaseService {
 
   static bool _initialized = false;
 
-  /// Firebase初期化（iOS対応のため一時的にスタブ実装）
+  /// Firebase初期化
   static Future<void> initialize() async {
     if (_initialized) return;
     
     try {
-      // await Firebase.initializeApp(  // iOS対応のため一時無効化
-      //   options: DefaultFirebaseOptions.currentPlatform,
-      // );
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
       
-      print('Firebase初期化スキップ（iOS対応モード）');
+      // Analytics初期化
+      AnalyticsService().initialize();
+      
+      print('Firebase初期化完了');
       
       _initialized = true;
-      print('Firebase初期化完了（スタブ）');
     } catch (e) {
       print('Firebase初期化エラー: $e');
       rethrow;

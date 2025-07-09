@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/themes/app_theme.dart';
+import '../../../services/analytics_service.dart';
 import 'onboarding_basic_info_screen.dart';
 
 class OnboardingWelcomeScreen extends StatefulWidget {
@@ -11,6 +12,13 @@ class OnboardingWelcomeScreen extends StatefulWidget {
 
 class _OnboardingWelcomeScreenState extends State<OnboardingWelcomeScreen> {
   final TextEditingController _nicknameController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // オンボーディング開始イベント
+    AnalyticsService().logOnboardingStarted();
+  }
 
   @override
   void dispose() {
@@ -106,6 +114,9 @@ class _OnboardingWelcomeScreenState extends State<OnboardingWelcomeScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
+                    // オンボーディングステップ完了イベント
+                    AnalyticsService().logOnboardingStepCompleted('welcome');
+                    
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => OnboardingBasicInfoScreen(

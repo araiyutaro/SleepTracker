@@ -13,6 +13,7 @@ import 'data/datasources/local_data_source.dart';
 import 'domain/usecases/start_sleep_tracking_usecase.dart';
 import 'domain/usecases/end_sleep_tracking_usecase.dart';
 import 'services/database_service.dart';
+import 'services/analytics_service.dart';
 
 class SleepApp extends StatelessWidget {
   const SleepApp({Key? key}) : super(key: key);
@@ -75,6 +76,9 @@ class SleepApp extends StatelessWidget {
         themeMode: ThemeMode.system,
         home: const SplashScreen(),
         debugShowCheckedModeBanner: false,
+        navigatorObservers: [
+          AnalyticsService().observer,
+        ],
       ),
     );
   }

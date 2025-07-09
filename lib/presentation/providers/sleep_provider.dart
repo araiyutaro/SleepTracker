@@ -5,6 +5,7 @@ import '../../domain/usecases/end_sleep_tracking_usecase.dart';
 import '../../domain/repositories/sleep_repository.dart';
 import '../../services/sensor_service.dart';
 import '../../services/permission_service.dart';
+import '../../services/analytics_service.dart';
 import 'user_provider.dart';
 
 enum SleepTrackingState {
@@ -85,6 +86,9 @@ class SleepProvider extends ChangeNotifier {
       _state = SleepTrackingState.tracking;
       _startDurationTimer();
       
+      // Analytics: 睡眠記録開始イベント
+      await AnalyticsService().logSleepRecordStarted();
+      
       try {
         await _sensorService.startMonitoring();
       } catch (e) {
@@ -144,6 +148,14 @@ class SleepProvider extends ChangeNotifier {
       debugPrint('Attempting to end sleep session with ID: ${_currentSession?.id}');
       final endedSession = await _endSleepTracking.execute();
       debugPrint('Sleep session ended successfully: ${endedSession.id}');
+      
+      // Analytics: 睡眠記録完了イベント
+      if (endedSession != null) {
+        await AnalyticsService().logSleepRecordCompleted(
+          durationMinutes: endedSession.duration?.inMinutes ?? 0,
+          qualityScore: endedSession.qualityScore,
+        );
+      }
       
       if (endedSession != null && _userProvider != null) {
         try {

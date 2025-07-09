@@ -49,11 +49,9 @@ dependencies:
   # ユーティリティ
   intl: ^0.18.1
   
-  # Firebase/GCP（iOS対応のため一時的に無効化）
-  # firebase_core: ^2.10.0  # iOS ビルド問題解決まで一時無効化
-  # firebase_auth: ^4.6.3  # iOS ビルド問題解決まで一時無効化
-  # cloud_firestore: ^4.7.1  # iOS対応のため一時的に無効化
-  # cloud_functions: ^4.3.0  # iOS ビルド問題のため一時的に無効化
+  # Firebase/GCP
+  firebase_core: ^2.24.0
+  firebase_analytics: ^10.7.0
   uuid: ^3.0.7
   http: ^0.13.5  # Firebase代替用HTTP クライアント
   

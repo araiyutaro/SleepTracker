@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/themes/app_theme.dart';
 import '../../../domain/entities/user_profile.dart';
+import '../../../services/analytics_service.dart';
 import '../../providers/user_provider.dart';
 import '../../widgets/onboarding_progress_bar.dart';
 import '../main_screen.dart';
@@ -259,6 +260,21 @@ class _OnboardingCompletionScreenState extends State<OnboardingCompletionScreen>
       debugPrint('Saving profile with isOnboardingCompleted: ${userProfile.isOnboardingCompleted}');
       await userProvider.updateProfile(userProfile);
       debugPrint('Profile saved successfully');
+      
+      // Analytics: オンボーディング完了イベント
+      await AnalyticsService().logOnboardingCompleted(
+        ageGroup: widget.ageGroup,
+        gender: widget.gender,
+        occupation: widget.occupation,
+      );
+      
+      // Analytics: ユーザープロパティ設定
+      await AnalyticsService().setUserProperties(
+        userId: userProfile.id,
+        ageGroup: widget.ageGroup,
+        gender: widget.gender,
+        occupation: widget.occupation,
+      );
       
       // メイン画面に遷移（全ての画面をクリア）
       if (mounted) {

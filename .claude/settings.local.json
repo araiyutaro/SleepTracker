@@ -20,7 +20,8 @@
       "Bash(cat:*)",
       "Bash(npm:*)",
       "Bash(node:*)",
-      "Bash(dart:*)"
+      "Bash(dart:*)",
+      "Bash(pkill:*)"
     ],
     "deny": []
   }

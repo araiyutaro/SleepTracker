@@ -4,6 +4,7 @@ import 'history_screen.dart';
 import 'sleep_analytics_screen.dart';
 import 'profile_screen.dart';
 import '../../core/themes/app_theme.dart';
+import '../../services/analytics_service.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -21,6 +22,20 @@ class _MainScreenState extends State<MainScreen> {
     SleepAnalyticsScreen(),
     ProfileScreen(),
   ];
+  
+  final List<String> _screenNames = const [
+    'home',
+    'history', 
+    'analytics',
+    'profile',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Analytics: アプリ開始イベント
+    AnalyticsService().logAppOpened();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +51,8 @@ class _MainScreenState extends State<MainScreen> {
           setState(() {
             _currentIndex = index;
           });
+          // Analytics: 画面遷移イベント
+          AnalyticsService().logScreenView(_screenNames[index]);
         },
         selectedItemColor: AppTheme.primaryColor,
         unselectedItemColor: Colors.grey,
