@@ -52,7 +52,7 @@ firebase-debug.log
 firestore-debug.log
 functions-debug.log
 
-# Service account keys
+# Service account keys and Firebase config files (NEVER COMMIT THESE)
 *.json
 !firebase.json
 !firestore.rules
@@ -60,6 +60,10 @@ functions-debug.log
 !functions/package.json
 !functions/tsconfig.json
 !.claude/settings.local.json
+google-services.json
+android/app/google-services.json
+GoogleService-Info.plist
+ios/Runner/GoogleService-Info.plist
 
 # iOS build
 ios/build/
