@@ -50,8 +50,8 @@
 	
 	<!-- HealthKit権限設定 -->
 	<key>NSHealthShareUsageDescription</key>
-	<string>このアプリは睡眠データを分析し、より良い睡眠習慣をサポートするためにHealthKitデータにアクセスします。</string>
+	<string>このアプリは睡眠データ、心拍数、歩数、消費カロリーを分析し、より良い睡眠習慣をサポートするためにHealthKitデータにアクセスします。</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>このアプリで記録した睡眠データをHealthKitに保存し、他のヘルスアプリと連携します。</string>
+	<string>このアプリで記録した睡眠データをHealthKitに保存し、他のヘルスアプリと連携して包括的な健康管理を行います。</string>
 </dict>
 </plist>

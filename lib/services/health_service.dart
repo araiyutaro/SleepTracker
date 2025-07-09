@@ -39,18 +39,40 @@ class HealthService {
         HealthDataType.ACTIVE_ENERGY_BURNED,
       ];
       
+      debugPrint('HealthService: Requesting permissions for ${types.length} health data types');
+      
+      // プラットフォームサポート確認
+      bool isSupported = await _health.isDataTypeAvailable(HealthDataType.SLEEP_ASLEEP);
+      debugPrint('HealthService: Sleep data type availability: $isSupported');
+      
+      if (!isSupported) {
+        debugPrint('HealthService: Health data types not supported on this platform');
+        return false;
+      }
+      
       bool requested = await _health.requestAuthorization(types);
       debugPrint('HealthService: Permission request result: $requested');
+      
+      // 各権限の詳細確認
+      for (final type in types) {
+        bool? hasPermission = await _health.hasPermissions([type]);
+        debugPrint('HealthService: Permission for $type: $hasPermission');
+      }
+      
       return requested;
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('HealthService: Permission request failed: $e');
+      debugPrint('HealthService: Stack trace: $stackTrace');
       return false;
     }
   }
 
   /// 権限確認
   Future<bool> hasPermissions() async {
-    if (!_isInitialized) return false;
+    if (!_isInitialized) {
+      debugPrint('HealthService: Service not initialized');
+      return false;
+    }
 
     try {
       final types = [
@@ -65,10 +87,21 @@ class HealthService {
         HealthDataType.ACTIVE_ENERGY_BURNED,
       ];
       
+      debugPrint('HealthService: Checking permissions for ${types.length} health data types');
+      
       bool? hasPermissions = await _health.hasPermissions(types);
+      debugPrint('HealthService: Has permissions result: $hasPermissions');
+      
+      // 各権限の詳細確認
+      for (final type in types) {
+        bool? hasPermission = await _health.hasPermissions([type]);
+        debugPrint('HealthService: Has permission for $type: $hasPermission');
+      }
+      
       return hasPermissions ?? false;
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('HealthService: Permission check failed: $e');
+      debugPrint('HealthService: Stack trace: $stackTrace');
       return false;
     }
   }
@@ -201,8 +234,18 @@ class HealthService {
   /// プラットフォームサポート確認
   Future<bool> isSupported() async {
     try {
-      return true; // 簡単な実装のため、常にtrueを返す
-    } catch (e) {
+      if (!_isInitialized) {
+        await initialize();
+      }
+      
+      // 基本的な睡眠データタイプがサポートされているか確認
+      bool sleepSupported = await _health.isDataTypeAvailable(HealthDataType.SLEEP_ASLEEP);
+      debugPrint('HealthService: Sleep data type supported: $sleepSupported');
+      
+      return sleepSupported;
+    } catch (e, stackTrace) {
+      debugPrint('HealthService: Platform support check failed: $e');
+      debugPrint('HealthService: Stack trace: $stackTrace');
       return false;
     }
   }

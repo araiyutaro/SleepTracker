@@ -377,28 +377,61 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _requestHealthPermissions(SleepProvider sleepProvider) async {
     try {
+      debugPrint('ProfileScreen: Starting health permissions request...');
+      
       bool granted = await sleepProvider.requestHealthPermissions();
+      
+      debugPrint('ProfileScreen: Health permissions result: $granted');
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(granted 
               ? 'ヘルスデータ権限が許可されました'
-              : 'ヘルスデータ権限が拒否されました'),
+              : 'ヘルスデータ権限が拒否されました。端末の設定からアプリの権限を確認してください。'),
             backgroundColor: granted ? Colors.green : Colors.red,
+            duration: Duration(seconds: granted ? 3 : 5),
           ),
         );
+        
+        // 権限が拒否された場合、詳細情報を表示
+        if (!granted) {
+          _showPermissionDeniedDialog();
+        }
       }
     } catch (e) {
+      debugPrint('ProfileScreen: Error requesting health permissions: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('エラー: $e'),
+            content: Text('エラーが発生しました: $e'),
             backgroundColor: Colors.red,
+            duration: Duration(seconds: 5),
           ),
         );
       }
     }
+  }
+
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('ヘルスデータ権限について'),
+        content: const Text(
+          'ヘルスデータ機能を使用するには、以下の手順で権限を許可してください：\n\n'
+          'iOS: 設定 > プライバシーとセキュリティ > ヘルスケア > Sleep\n'
+          'Android: 設定 > アプリと通知 > Sleep > 権限\n\n'
+          'または、端末にHealth Connect/Google Fitアプリがインストールされている必要があります。'
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _showHealthSummary(SleepProvider sleepProvider) async {

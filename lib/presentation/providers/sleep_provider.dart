@@ -219,9 +219,14 @@ class SleepProvider extends ChangeNotifier {
         debugPrint('No HealthKit permissions, requesting...');
         bool granted = await _healthService.requestPermissions();
         if (!granted) {
-          debugPrint('HealthKit permissions denied');
+          debugPrint('HealthKit permissions denied - this may affect data sync');
+          // 権限がなくても睡眠記録は継続できるようにする
           return;
+        } else {
+          debugPrint('HealthKit permissions granted successfully');
         }
+      } else {
+        debugPrint('HealthKit permissions already granted');
       }
 
       DateTime bedTime = session.startTime;
@@ -282,6 +287,7 @@ class SleepProvider extends ChangeNotifier {
   Future<bool> requestHealthPermissions() async {
     try {
       if (!_healthService.isInitialized) {
+        debugPrint('Initializing HealthService...');
         await _healthService.initialize();
       }
       
@@ -291,9 +297,19 @@ class SleepProvider extends ChangeNotifier {
         return false;
       }
 
-      return await _healthService.requestPermissions();
-    } catch (e) {
+      debugPrint('Platform supports health data, requesting permissions...');
+      bool granted = await _healthService.requestPermissions();
+      
+      if (granted) {
+        debugPrint('Health permissions granted successfully');
+      } else {
+        debugPrint('Health permissions denied by user');
+      }
+      
+      return granted;
+    } catch (e, stackTrace) {
       debugPrint('Error requesting health permissions: $e');
+      debugPrint('Stack trace: $stackTrace');
       return false;
     }
   }
