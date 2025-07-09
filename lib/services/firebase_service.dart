@@ -1,70 +1,74 @@
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
+// import 'package:firebase_core/firebase_core.dart';  // iOS対応のため一時無効化
+// import 'package:firebase_auth/firebase_auth.dart';  // iOS対応のため一時無効化
+// import 'package:cloud_firestore/cloud_firestore.dart';  // iOS対応のため一時無効化
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+// import '../firebase_options.dart';  // iOS対応のため一時無効化
 
 /// Firebase サービスクラス
 /// Google Cloud Platform との通信を担当
 class FirebaseService {
-  static final FirebaseAuth _auth = FirebaseAuth.instance;
-  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  static final FirebaseFunctions _functions = FirebaseFunctions.instance;
+  // static final FirebaseAuth _auth = FirebaseAuth.instance;  // iOS対応のため一時無効化
+  // static final FirebaseFirestore _firestore = FirebaseFirestore.instance;  // iOS対応のため一時無効化
+  // Cloud Functions HTTPエンドポイント（iOS対応）
+  static const String _functionsBaseUrl = 'https://us-central1-sleep-tracker-app-1751975391.cloudfunctions.net';
 
   static bool _initialized = false;
 
-  /// Firebase初期化
+  /// Firebase初期化（iOS対応のため一時的にスタブ実装）
   static Future<void> initialize() async {
     if (_initialized) return;
     
     try {
-      await Firebase.initializeApp();
+      // await Firebase.initializeApp(  // iOS対応のため一時無効化
+      //   options: DefaultFirebaseOptions.currentPlatform,
+      // );
       
-      // 開発環境ではローカルエミュレーターを使用
-      // _functions.useFunctionsEmulator('localhost', 5001);
-      // _firestore.useFirestoreEmulator('localhost', 8080);
-      // _auth.useAuthEmulator('localhost', 9099);
+      print('Firebase初期化スキップ（iOS対応モード）');
       
       _initialized = true;
-      print('Firebase初期化完了');
+      print('Firebase初期化完了（スタブ）');
     } catch (e) {
       print('Firebase初期化エラー: $e');
       rethrow;
     }
   }
 
-  /// 匿名認証
-  static Future<User?> signInAnonymously() async {
+  /// 匿名認証（iOS対応のため一時的にスタブ実装）
+  static Future<dynamic> signInAnonymously() async {
     try {
-      final userCredential = await _auth.signInAnonymously();
-      print('匿名認証成功: ${userCredential.user?.uid}');
-      return userCredential.user;
+      // final userCredential = await _auth.signInAnonymously();  // iOS対応のため一時無効化
+      print('匿名認証スキップ（iOS対応モード）');
+      return null;
     } catch (e) {
       print('匿名認証エラー: $e');
       return null;
     }
   }
 
-  /// 現在のユーザーを取得
-  static User? getCurrentUser() {
-    return _auth.currentUser;
+  /// 現在のユーザーを取得（iOS対応のため一時的にスタブ実装）
+  static dynamic getCurrentUser() {
+    // return _auth.currentUser;  // iOS対応のため一時無効化
+    return null;
   }
 
-  /// 認証状態を監視
-  static Stream<User?> authStateChanges() {
-    return _auth.authStateChanges();
+  /// 認証状態を監視（iOS対応のため一時的にスタブ実装）
+  static Stream<dynamic> authStateChanges() {
+    // return _auth.authStateChanges();  // iOS対応のため一時無効化
+    return Stream.value(null);
   }
 
-  /// サインアウト
+  /// サインアウト（iOS対応のため一時的にスタブ実装）
   static Future<void> signOut() async {
     try {
-      await _auth.signOut();
-      print('サインアウト完了');
+      // await _auth.signOut();  // iOS対応のため一時無効化
+      print('サインアウト完了（スタブ）');
     } catch (e) {
       print('サインアウトエラー: $e');
     }
   }
 
-  /// 睡眠データをCloud Functionsにアップロード
+  /// 睡眠データをCloud Functionsにアップロード（HTTP API経由）
   static Future<bool> uploadSleepData({
     required Map<String, dynamic> sleepSession,
     required Map<String, dynamic> userProfile,
@@ -76,30 +80,41 @@ class FirebaseService {
         return false;
       }
 
-      final callable = _functions.httpsCallable('uploadSleepData');
-      final result = await callable.call({
-        'sleepSession': sleepSession,
-        'userProfile': userProfile,
-      });
+      final token = await user.getIdToken();
+      final response = await http.post(
+        Uri.parse('$_functionsBaseUrl/uploadSleepData'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'data': {
+            'sleepSession': sleepSession,
+            'userProfile': userProfile,
+          }
+        }),
+      );
 
-      final success = result.data['success'] == true;
-      if (success) {
-        print('睡眠データアップロード成功');
+      if (response.statusCode == 200) {
+        final result = json.decode(response.body);
+        final success = result['result']['success'] == true;
+        if (success) {
+          print('睡眠データアップロード成功');
+        } else {
+          print('睡眠データアップロード失敗: ${result['result']['message']}');
+        }
+        return success;
       } else {
-        print('睡眠データアップロード失敗: ${result.data['message']}');
+        print('HTTP エラー: ${response.statusCode} - ${response.body}');
+        return false;
       }
-      
-      return success;
-    } on FirebaseFunctionsException catch (e) {
-      print('Cloud Function呼び出しエラー: ${e.code} - ${e.message}');
-      return false;
     } catch (e) {
       print('睡眠データアップロードエラー: $e');
       return false;
     }
   }
 
-  /// グループ分析データを取得
+  /// グループ分析データを取得（HTTP API経由）
   static Future<Map<String, dynamic>?> getGroupAnalytics({
     required String ageGroup,
     required String occupation,
@@ -111,128 +126,216 @@ class FirebaseService {
         return null;
       }
 
-      final callable = _functions.httpsCallable('getGroupAnalytics');
-      final result = await callable.call({
-        'ageGroup': ageGroup,
-        'occupation': occupation,
-      });
+      final token = await user.getIdToken();
+      final response = await http.post(
+        Uri.parse('$_functionsBaseUrl/getGroupAnalytics'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'data': {
+            'ageGroup': ageGroup,
+            'occupation': occupation,
+          }
+        }),
+      );
 
-      print('グループ分析データ取得成功');
-      return Map<String, dynamic>.from(result.data);
-    } on FirebaseFunctionsException catch (e) {
-      print('グループ分析取得エラー: ${e.code} - ${e.message}');
-      return null;
+      if (response.statusCode == 200) {
+        final result = json.decode(response.body);
+        print('グループ分析データ取得成功');
+        return Map<String, dynamic>.from(result['result']);
+      } else {
+        print('HTTP エラー: ${response.statusCode} - ${response.body}');
+        return null;
+      }
     } catch (e) {
       print('グループ分析取得エラー: $e');
       return null;
     }
   }
 
-  /// トレンド分析データを取得
+  /// トレンド分析データを取得（HTTP API経由）
   static Future<Map<String, dynamic>?> getTrendAnalytics({
     String period = '30',
   }) async {
     try {
-      final callable = _functions.httpsCallable('getTrendAnalytics');
-      final result = await callable.call({
-        'period': period,
-      });
+      final response = await http.post(
+        Uri.parse('$_functionsBaseUrl/getTrendAnalytics'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'data': {
+            'period': period,
+          }
+        }),
+      );
 
-      print('トレンド分析データ取得成功');
-      return Map<String, dynamic>.from(result.data);
-    } on FirebaseFunctionsException catch (e) {
-      print('トレンド分析取得エラー: ${e.code} - ${e.message}');
-      return null;
+      if (response.statusCode == 200) {
+        final result = json.decode(response.body);
+        print('トレンド分析データ取得成功');
+        return Map<String, dynamic>.from(result['result']);
+      } else {
+        print('HTTP エラー: ${response.statusCode} - ${response.body}');
+        return null;
+      }
     } catch (e) {
       print('トレンド分析取得エラー: $e');
       return null;
     }
   }
 
-  /// ユーザーデータをFirestoreに保存
+  /// ユーザーデータをHTTP API経由で保存
   static Future<bool> saveUserProfile({
     required String userId,
     required Map<String, dynamic> profileData,
   }) async {
     try {
-      await _firestore
-          .collection('users')
-          .doc(userId)
-          .set({'profile': profileData}, SetOptions(merge: true));
-      
-      print('ユーザープロファイル保存成功');
-      return true;
+      final user = getCurrentUser();
+      if (user == null) {
+        print('ユーザーが認証されていません');
+        return false;
+      }
+
+      final token = await user.getIdToken();
+      final response = await http.post(
+        Uri.parse('$_functionsBaseUrl/saveUserProfile'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'data': {
+            'userId': userId,
+            'profileData': profileData,
+          }
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('ユーザープロファイル保存成功');
+        return true;
+      } else {
+        print('HTTP エラー: ${response.statusCode} - ${response.body}');
+        return false;
+      }
     } catch (e) {
       print('ユーザープロファイル保存エラー: $e');
       return false;
     }
   }
 
-  /// ユーザーデータをFirestoreから取得
+  /// ユーザーデータをHTTP API経由で取得
   static Future<Map<String, dynamic>?> getUserProfile(String userId) async {
     try {
-      final doc = await _firestore
-          .collection('users')
-          .doc(userId)
-          .get();
-
-      if (doc.exists) {
-        final data = doc.data();
-        return data?['profile'];
+      final user = getCurrentUser();
+      if (user == null) {
+        print('ユーザーが認証されていません');
+        return null;
       }
-      return null;
+
+      final token = await user.getIdToken();
+      final response = await http.post(
+        Uri.parse('$_functionsBaseUrl/getUserProfile'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'data': {
+            'userId': userId,
+          }
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final result = json.decode(response.body);
+        return Map<String, dynamic>.from(result['result']);
+      } else {
+        print('HTTP エラー: ${response.statusCode} - ${response.body}');
+        return null;
+      }
     } catch (e) {
       print('ユーザープロファイル取得エラー: $e');
       return null;
     }
   }
 
-  /// 個人の睡眠履歴を取得
+  /// 個人の睡眠履歴をHTTP API経由で取得
   static Future<List<Map<String, dynamic>>> getUserSleepHistory({
     required String userId,
     int limit = 30,
   }) async {
     try {
-      final query = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('sleepSessions')
-          .orderBy('startTime', descending: true)
-          .limit(limit)
-          .get();
+      final user = getCurrentUser();
+      if (user == null) {
+        print('ユーザーが認証されていません');
+        return [];
+      }
 
-      return query.docs.map((doc) => {
-        'id': doc.id,
-        ...doc.data(),
-      }).toList();
+      final token = await user.getIdToken();
+      final response = await http.post(
+        Uri.parse('$_functionsBaseUrl/getUserSleepHistory'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'data': {
+            'userId': userId,
+            'limit': limit,
+          }
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final result = json.decode(response.body);
+        return List<Map<String, dynamic>>.from(result['result']);
+      } else {
+        print('HTTP エラー: ${response.statusCode} - ${response.body}');
+        return [];
+      }
     } catch (e) {
       print('睡眠履歴取得エラー: $e');
       return [];
     }
   }
 
-  /// 日次集計データを取得
+  /// 日次集計データをHTTP API経由で取得
   static Future<List<Map<String, dynamic>>> getDailyAggregates({
     required String userId,
     int days = 30,
   }) async {
     try {
-      final endDate = DateTime.now();
-      final startDate = endDate.subtract(Duration(days: days));
-      
-      final query = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('dailyAggregates')
-          .where('date', isGreaterThanOrEqualTo: startDate.toIso8601String().split('T')[0])
-          .where('date', isLessThanOrEqualTo: endDate.toIso8601String().split('T')[0])
-          .orderBy('date', descending: true)
-          .get();
+      final user = getCurrentUser();
+      if (user == null) {
+        print('ユーザーが認証されていません');
+        return [];
+      }
 
-      return query.docs.map((doc) => {
-        'id': doc.id,
-        ...doc.data(),
-      }).toList();
+      final token = await user.getIdToken();
+      final response = await http.post(
+        Uri.parse('$_functionsBaseUrl/getDailyAggregates'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'data': {
+            'userId': userId,
+            'days': days,
+          }
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final result = json.decode(response.body);
+        return List<Map<String, dynamic>>.from(result['result']);
+      } else {
+        print('HTTP エラー: ${response.statusCode} - ${response.body}');
+        return [];
+      }
     } catch (e) {
       print('日次集計データ取得エラー: $e');
       return [];

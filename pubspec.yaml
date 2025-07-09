@@ -49,12 +49,13 @@ dependencies:
   # ユーティリティ
   intl: ^0.18.1
   
-  # Firebase/GCP（Dart 2.19.4対応）
-  firebase_core: ^2.10.0
-  firebase_auth: ^4.6.3
-  cloud_firestore: ^4.7.1
-  cloud_functions: ^4.3.0
+  # Firebase/GCP（iOS対応のため一時的に無効化）
+  # firebase_core: ^2.10.0  # iOS ビルド問題解決まで一時無効化
+  # firebase_auth: ^4.6.3  # iOS ビルド問題解決まで一時無効化
+  # cloud_firestore: ^4.7.1  # iOS対応のため一時的に無効化
+  # cloud_functions: ^4.3.0  # iOS ビルド問題のため一時的に無効化
   uuid: ^3.0.7
+  http: ^0.13.5  # Firebase代替用HTTP クライアント
   
   # 通知
   flutter_local_notifications: ^15.1.0+1
