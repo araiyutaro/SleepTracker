@@ -11,7 +11,16 @@
       "Bash(git commit:*)",
       "Bash(git checkout:*)",
       "Bash(git branch:*)",
-      "Bash(dart run:*)"
+      "Bash(dart run:*)",
+      "Bash(pod install:*)",
+      "Bash(npm install:*)",
+      "Bash(firebase:*)",
+      "Bash(npm run build:*)",
+      "Bash(git reset:*)",
+      "Bash(cat:*)",
+      "Bash(npm:*)",
+      "Bash(node:*)",
+      "Bash(dart:*)"
     ],
     "deny": []
   }
