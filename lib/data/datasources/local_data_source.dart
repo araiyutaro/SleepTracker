@@ -141,21 +141,32 @@ class LocalDataSource {
   }
 
   Future<void> insertOrUpdateUserProfile(UserProfileModel profile) async {
+    print('LocalDataSource: Inserting/updating profile with ID: ${profile.id}');
+    print('LocalDataSource: isOnboardingCompleted: ${profile.isOnboardingCompleted}');
     final db = await _databaseService.database;
+    final map = profile.toMap();
+    print('LocalDataSource: Profile map: $map');
     await db.insert(
       'user_profiles',
-      profile.toMap(),
+      map,
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+    print('LocalDataSource: Profile inserted/updated successfully');
   }
 
   Future<UserProfileModel?> getUserProfile(String id) async {
+    print('LocalDataSource: Querying profile for ID: $id');
     final db = await _databaseService.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'user_profiles',
       where: 'id = ?',
       whereArgs: [id],
     );
+
+    print('LocalDataSource: Found ${maps.length} profiles');
+    if (maps.isNotEmpty) {
+      print('LocalDataSource: Profile data: ${maps.first}');
+    }
 
     if (maps.isEmpty) return null;
     return UserProfileModel.fromMap(maps.first);

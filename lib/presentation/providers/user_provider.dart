@@ -36,7 +36,13 @@ class UserProvider extends ChangeNotifier {
   }
 
   Future<void> _loadUserProfile() async {
+    debugPrint('Loading user profile from repository...');
     _userProfile = await _userRepository.getUserProfile();
+    debugPrint('Loaded profile: ${_userProfile != null}');
+    if (_userProfile != null) {
+      debugPrint('Profile ID: ${_userProfile!.id}');
+      debugPrint('isOnboardingCompleted: ${_userProfile!.isOnboardingCompleted}');
+    }
     notifyListeners();
   }
 
@@ -131,9 +137,13 @@ class UserProvider extends ChangeNotifier {
   }
 
   Future<void> updateProfile(UserProfile profile) async {
+    debugPrint('UserProvider: Saving profile with ID: ${profile.id}');
+    debugPrint('UserProvider: isOnboardingCompleted: ${profile.isOnboardingCompleted}');
     await _userRepository.saveUserProfile(profile);
+    debugPrint('UserProvider: Profile saved to repository');
     _userProfile = profile;
     _scheduleNotifications();
     notifyListeners();
+    debugPrint('UserProvider: State updated and listeners notified');
   }
 }

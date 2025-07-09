@@ -256,7 +256,9 @@ class _OnboardingCompletionScreenState extends State<OnboardingCompletionScreen>
       );
 
       // ユーザープロファイルを保存
+      debugPrint('Saving profile with isOnboardingCompleted: ${userProfile.isOnboardingCompleted}');
       await userProvider.updateProfile(userProfile);
+      debugPrint('Profile saved successfully');
       
       // メイン画面に遷移（全ての画面をクリア）
       if (mounted) {

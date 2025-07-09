@@ -30,7 +30,12 @@ class _SplashScreenState extends State<SplashScreen> {
       
       if (mounted) {
         // オンボーディング完了状態をチェック
-        final isOnboardingCompleted = userProvider.profile?.isOnboardingCompleted ?? false;
+        final profile = userProvider.profile;
+        debugPrint('Profile exists: ${profile != null}');
+        if (profile != null) {
+          debugPrint('isOnboardingCompleted: ${profile.isOnboardingCompleted}');
+        }
+        final isOnboardingCompleted = profile?.isOnboardingCompleted ?? false;
         
         if (isOnboardingCompleted) {
           // オンボーディング完了済み -> メイン画面へ
