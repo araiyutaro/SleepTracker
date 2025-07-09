@@ -23,7 +23,8 @@
       "Bash(dart:*)",
       "Bash(pkill:*)",
       "Bash(git push:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(./gradlew:*)"
     ],
     "deny": []
   }
