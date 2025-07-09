@@ -235,7 +235,7 @@ class _OnboardingCompletionScreenState extends State<OnboardingCompletionScreen>
       
       // UserProfileを作成
       final userProfile = UserProfile(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: 'default_user',
         nickname: widget.nickname,
         ageGroup: widget.ageGroup,
         gender: widget.gender,

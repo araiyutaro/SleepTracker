@@ -21,7 +21,7 @@ class DatabaseService {
 
       return await openDatabase(
         path,
-        version: 3,
+        version: 4,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onOpen: (db) async {
@@ -213,6 +213,25 @@ class DatabaseService {
       await db.execute('ALTER TABLE user_profiles ADD COLUMN phone_usage_time TEXT');
       await db.execute('ALTER TABLE user_profiles ADD COLUMN phone_usage_content_json TEXT');
       await db.execute('ALTER TABLE user_profiles ADD COLUMN is_onboarding_completed INTEGER NOT NULL DEFAULT 0');
+    }
+    
+    // バージョン3→4: 既存プロファイルのIDを標準化
+    if (oldVersion < 4) {
+      // タイムスタンプベースのIDを持つプロファイルがあれば、default_userに変更
+      final profiles = await db.query('user_profiles');
+      for (final profile in profiles) {
+        final currentId = profile['id'] as String;
+        // 数値のみのIDの場合（タイムスタンプ）、default_userに変更
+        if (RegExp(r'^\d+$').hasMatch(currentId)) {
+          await db.update(
+            'user_profiles',
+            {'id': 'default_user'},
+            where: 'id = ?',
+            whereArgs: [currentId],
+          );
+          print('Database: Updated profile ID from $currentId to default_user');
+        }
+      }
     }
   }
 
