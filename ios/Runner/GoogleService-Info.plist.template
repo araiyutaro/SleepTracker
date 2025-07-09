@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- INSTRUCTIONS: 
+	1. This is a template file. DO NOT commit the actual GoogleService-Info.plist to Git.
+	2. Copy this file to GoogleService-Info.plist in the same directory.
+	3. Replace the placeholder values below with your actual Firebase configuration.
+	4. Get your configuration from Firebase Console > Project Settings > iOS App
+	-->
+	<key>API_KEY</key>
+	<string>YOUR_iOS_API_KEY_HERE</string>
+	<key>GCM_SENDER_ID</key>
+	<string>YOUR_SENDER_ID_HERE</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.arai.sleep</string>
+	<key>PROJECT_ID</key>
+	<string>YOUR_PROJECT_ID_HERE</string>
+	<key>STORAGE_BUCKET</key>
+	<string>YOUR_PROJECT_ID_HERE.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>YOUR_GOOGLE_APP_ID_HERE</string>
+</dict>
+</plist>
