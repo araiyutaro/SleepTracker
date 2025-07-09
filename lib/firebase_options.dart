@@ -44,40 +44,40 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'demo-api-key',
-    appId: '1:demo:web:demo',
-    messagingSenderId: 'demo',
+    apiKey: 'AIzaSyCDpJHXq3GyjG4cmP7PXKjdALpXed07gOE',
+    appId: '1:633993262558:web:demo',
+    messagingSenderId: '633993262558',
     projectId: 'sleep-tracker-app-1751975391',
     authDomain: 'sleep-tracker-app-1751975391.firebaseapp.com',
-    storageBucket: 'sleep-tracker-app-1751975391.appspot.com',
+    storageBucket: 'sleep-tracker-app-1751975391.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'demo-api-key',
-    appId: '1:demo:android:demo',
-    messagingSenderId: 'demo',
+    apiKey: 'AIzaSyC74XehF-FTCZoMl-EW1x-KxzToBuFBxIE',
+    appId: '1:633993262558:android:311bb88362d247d846994f',
+    messagingSenderId: '633993262558',
     projectId: 'sleep-tracker-app-1751975391',
     authDomain: 'sleep-tracker-app-1751975391.firebaseapp.com',
-    storageBucket: 'sleep-tracker-app-1751975391.appspot.com',
+    storageBucket: 'sleep-tracker-app-1751975391.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'demo-api-key',
-    appId: '1:demo:ios:demo',
-    messagingSenderId: 'demo',
+    apiKey: 'AIzaSyCDpJHXq3GyjG4cmP7PXKjdALpXed07gOE',
+    appId: '1:633993262558:ios:6b5ac538aabc962546994f',
+    messagingSenderId: '633993262558',
     projectId: 'sleep-tracker-app-1751975391',
     authDomain: 'sleep-tracker-app-1751975391.firebaseapp.com',
-    storageBucket: 'sleep-tracker-app-1751975391.appspot.com',
+    storageBucket: 'sleep-tracker-app-1751975391.firebasestorage.app',
     iosBundleId: 'com.arai.sleep',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'demo-api-key',
-    appId: '1:demo:macos:demo',
-    messagingSenderId: 'demo',
+    apiKey: 'AIzaSyCDpJHXq3GyjG4cmP7PXKjdALpXed07gOE',
+    appId: '1:633993262558:macos:demo',
+    messagingSenderId: '633993262558',
     projectId: 'sleep-tracker-app-1751975391',
     authDomain: 'sleep-tracker-app-1751975391.firebaseapp.com',
-    storageBucket: 'sleep-tracker-app-1751975391.appspot.com',
+    storageBucket: 'sleep-tracker-app-1751975391.firebasestorage.app',
     iosBundleId: 'com.arai.sleep',
   );
 }

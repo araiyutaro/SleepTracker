@@ -21,7 +21,9 @@
       "Bash(npm:*)",
       "Bash(node:*)",
       "Bash(dart:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(git push:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }
