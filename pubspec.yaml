@@ -66,6 +66,9 @@ dependencies:
   sensors_plus: ^3.0.3
   permission_handler: ^10.4.3
   
+  # ヘルスデータ連携
+  health: ^9.0.0
+  
   # ファイル操作
   path_provider: ^2.1.1
 

@@ -6,6 +6,7 @@ import '../../domain/repositories/sleep_repository.dart';
 import '../../services/sensor_service.dart';
 import '../../services/permission_service.dart';
 import '../../services/analytics_service.dart';
+import '../../services/health_service.dart';
 import 'user_provider.dart';
 
 enum SleepTrackingState {
@@ -21,6 +22,7 @@ class SleepProvider extends ChangeNotifier {
   final SleepRepository _sleepRepository;
   final SensorService _sensorService = SensorService();
   final PermissionService _permissionService = PermissionService();
+  final HealthService _healthService = HealthService();
   UserProvider? _userProvider;
 
   SleepProvider({
@@ -54,6 +56,14 @@ class SleepProvider extends ChangeNotifier {
   Future<void> _initialize() async {
     await checkActiveSession();
     await loadRecentSessions();
+    
+    // ヘルスサービス初期化
+    try {
+      await _healthService.initialize();
+      debugPrint('HealthService initialized successfully');
+    } catch (e) {
+      debugPrint('HealthService initialization failed: $e');
+    }
   }
 
   Future<void> checkActiveSession() async {
@@ -168,6 +178,11 @@ class SleepProvider extends ChangeNotifier {
         }
       }
       
+      // ヘルスデータに書き込み
+      if (endedSession != null) {
+        await _writeToHealthKit(endedSession);
+      }
+      
       _currentSession = null;
       _state = SleepTrackingState.idle;
       _currentDuration = Duration.zero;
@@ -187,6 +202,122 @@ class SleepProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('Failed to load recent sessions: $e');
+    }
+  }
+
+  /// ヘルスキットに睡眠データを書き込み
+  Future<void> _writeToHealthKit(SleepSession session) async {
+    try {
+      if (!_healthService.isInitialized) {
+        debugPrint('HealthService not initialized, skipping HealthKit write');
+        return;
+      }
+
+      // 権限確認
+      bool hasPermissions = await _healthService.hasPermissions();
+      if (!hasPermissions) {
+        debugPrint('No HealthKit permissions, requesting...');
+        bool granted = await _healthService.requestPermissions();
+        if (!granted) {
+          debugPrint('HealthKit permissions denied');
+          return;
+        }
+      }
+
+      DateTime bedTime = session.startTime;
+      DateTime? wakeTime = session.endTime;
+      
+      if (wakeTime == null) {
+        debugPrint('Session end time is null, cannot write to HealthKit');
+        return;
+      }
+
+      // 睡眠ステージデータの準備
+      Duration? deepSleepDuration;
+      Duration? lightSleepDuration;
+      Duration? remSleepDuration;
+
+      if (session.sleepStages != null) {
+        // 睡眠ステージデータがある場合
+        var stages = session.sleepStages!;
+        Duration totalSleep = wakeTime.difference(bedTime);
+        deepSleepDuration = Duration(minutes: (totalSleep.inMinutes * stages.deepSleepPercentage / 100).round());
+        lightSleepDuration = Duration(minutes: (totalSleep.inMinutes * stages.lightSleepPercentage / 100).round());
+        remSleepDuration = Duration(minutes: (totalSleep.inMinutes * stages.remSleepPercentage / 100).round());
+      } else {
+        // 睡眠ステージデータがない場合、推定値を使用
+        Duration totalSleep = wakeTime.difference(bedTime);
+        deepSleepDuration = Duration(minutes: (totalSleep.inMinutes * 0.25).round());
+        lightSleepDuration = Duration(minutes: (totalSleep.inMinutes * 0.55).round());
+        remSleepDuration = Duration(minutes: (totalSleep.inMinutes * 0.20).round());
+      }
+
+      // ヘルスキットに書き込み
+      bool success = await _healthService.writeSleepStagesData(
+        bedTime: bedTime,
+        wakeTime: wakeTime,
+        deepSleepDuration: deepSleepDuration,
+        lightSleepDuration: lightSleepDuration,
+        remSleepDuration: remSleepDuration,
+      );
+
+      if (success) {
+        debugPrint('Successfully wrote sleep data to HealthKit');
+        // Analyticsイベント送信
+        await AnalyticsService().logCustomEvent('health_data_exported', parameters: {
+          'platform': 'healthkit',
+          'data_type': 'sleep',
+          'duration_minutes': session.duration?.inMinutes ?? 0,
+        });
+      } else {
+        debugPrint('Failed to write sleep data to HealthKit');
+      }
+    } catch (e) {
+      debugPrint('Error writing to HealthKit: $e');
+    }
+  }
+
+
+  /// ヘルスキット権限要求
+  Future<bool> requestHealthPermissions() async {
+    try {
+      if (!_healthService.isInitialized) {
+        await _healthService.initialize();
+      }
+      
+      bool isSupported = await _healthService.isSupported();
+      if (!isSupported) {
+        debugPrint('Health data not supported on this platform');
+        return false;
+      }
+
+      return await _healthService.requestPermissions();
+    } catch (e) {
+      debugPrint('Error requesting health permissions: $e');
+      return false;
+    }
+  }
+
+  /// ヘルスキットから睡眠データを読み取り
+  Future<Map<String, dynamic>> getHealthSummary({int days = 7}) async {
+    try {
+      if (!_healthService.isInitialized) {
+        await _healthService.initialize();
+      }
+
+      bool hasPermissions = await _healthService.hasPermissions();
+      if (!hasPermissions) {
+        debugPrint('No health permissions for reading data');
+        return {};
+      }
+
+      DateTime now = DateTime.now();
+      DateTime fromDate = now.subtract(Duration(days: days));
+
+      return await _healthService.getTodayHealthSummary();
+    } catch (e) {
+      debugPrint('Error getting health summary: $e');
+      return {};
     }
   }
 

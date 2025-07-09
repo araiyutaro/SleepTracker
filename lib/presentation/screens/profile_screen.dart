@@ -102,6 +102,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _buildProfileCard(profile),
                 const SizedBox(height: 16),
                 _buildPointsCard(profile),
+                const SizedBox(height: 16),
+                _buildHealthIntegrationCard(),
                 const SizedBox(height: 24),
                 _buildAchievementsSection(profile),
               ],
@@ -303,6 +305,181 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   int _getPointsForLevel(int level) {
     return (level - 1) * 500;
+  }
+
+  Widget _buildHealthIntegrationCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.health_and_safety, color: AppTheme.primaryColor),
+                const SizedBox(width: 12),
+                Text(
+                  'ヘルスデータ連携',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Apple HealthKit / Google Fitと連携して、より詳細な健康データを分析できます。',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Consumer<SleepProvider>(
+              builder: (context, sleepProvider, child) {
+                return Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _requestHealthPermissions(sleepProvider),
+                        icon: const Icon(Icons.security),
+                        label: const Text('ヘルスデータ権限を許可'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => _showHealthSummary(sleepProvider),
+                        icon: const Icon(Icons.analytics),
+                        label: const Text('ヘルスデータを表示'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.primaryColor,
+                          side: BorderSide(color: AppTheme.primaryColor),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _requestHealthPermissions(SleepProvider sleepProvider) async {
+    try {
+      bool granted = await sleepProvider.requestHealthPermissions();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(granted 
+              ? 'ヘルスデータ権限が許可されました'
+              : 'ヘルスデータ権限が拒否されました'),
+            backgroundColor: granted ? Colors.green : Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('エラー: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _showHealthSummary(SleepProvider sleepProvider) async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('ヘルスデータ取得中...'),
+        content: const CircularProgressIndicator(),
+      ),
+    );
+
+    try {
+      Map<String, dynamic> healthData = await sleepProvider.getHealthSummary();
+      
+      if (mounted) {
+        Navigator.of(context).pop(); // Loading dialog を閉じる
+        
+        _showHealthDataDialog(healthData);
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop(); // Loading dialog を閉じる
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('ヘルスデータの取得に失敗しました: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showHealthDataDialog(Map<String, dynamic> healthData) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('ヘルスデータサマリー'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildHealthDataItem('睡眠データ', healthData['sleepData']?.length ?? 0),
+              _buildHealthDataItem('心拍数データ', healthData['heartRateData']?.length ?? 0),
+              _buildHealthDataItem('歩数データ', healthData['stepsData']?.length ?? 0),
+              _buildHealthDataItem('カロリーデータ', healthData['caloriesData']?.length ?? 0),
+              const SizedBox(height: 16),
+              Text(
+                '最終更新: ${DateFormat('MM/dd HH:mm').format(healthData['lastUpdated'] ?? DateTime.now())}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('閉じる'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHealthDataItem(String label, int count) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label),
+          Text(
+            '$count件',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showSettingsDialog() {
