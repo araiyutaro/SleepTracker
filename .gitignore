@@ -59,3 +59,16 @@ functions-debug.log
 !firestore.indexes.json
 !functions/package.json
 !functions/tsconfig.json
+!.claude/settings.local.json
+
+# iOS build
+ios/build/
+
+# Temporary deployment status files
+DEPLOYMENT_*.md
+FIREBASE_SETUP.md
+IOS_BUILD_WORKAROUND.md
+PRODUCTION_SETUP_STATUS.md
+PROJECT_COMPLETION_SUMMARY.md
+FINAL_SUCCESS_STATUS.md
+setup_firebase_project.sh
