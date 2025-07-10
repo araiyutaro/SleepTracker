@@ -19,7 +19,7 @@ class NotificationService {
 
     tz.initializeTimeZones();
     
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings('@drawable/ic_notification');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -101,7 +101,7 @@ class NotificationService {
           channelDescription: '就寝時刻の前にお知らせします',
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: '@drawable/ic_notification',
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,
@@ -151,7 +151,7 @@ class NotificationService {
           channelDescription: '設定した時刻にお知らせします',
           importance: Importance.max,
           priority: Priority.max,
-          icon: '@mipmap/ic_launcher',
+          icon: '@drawable/ic_notification',
           sound: RawResourceAndroidNotificationSound('alarm'),
           playSound: true,
           enableVibration: true,
@@ -204,7 +204,7 @@ class NotificationService {
           channelDescription: '睡眠品質の結果をお知らせします',
           importance: Importance.defaultImportance,
           priority: Priority.defaultPriority,
-          icon: '@mipmap/ic_launcher',
+          icon: '@drawable/ic_notification',
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,
@@ -241,7 +241,7 @@ class NotificationService {
           channelDescription: '週1回の睡眠レポートをお知らせします',
           importance: Importance.defaultImportance,
           priority: Priority.defaultPriority,
-          icon: '@mipmap/ic_launcher',
+          icon: '@drawable/ic_notification',
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,

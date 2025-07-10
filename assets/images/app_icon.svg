@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景の円形グラデーション -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7B68EE;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#9370DB;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 星のグラデーション -->
+    <linearGradient id="starGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 雲のグラデーション -->
+    <linearGradient id="cloudGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#E6E6FA;stop-opacity:0.9" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 背景 -->
+  <rect width="1024" height="1024" rx="200" fill="url(#bgGradient)"/>
+  
+  <!-- 月（かわいい寝ている顔付き） -->
+  <g transform="translate(512, 400)">
+    <!-- 月の本体 -->
+    <path d="M -150 0 C -150 -120, -50 -200, 50 -180 C 100 -170, 150 -120, 150 0 C 150 120, 50 200, -50 180 C -100 170, -150 120, -150 0" 
+          fill="#FFFACD" stroke="#FFD700" stroke-width="8"/>
+    
+    <!-- 月の顔 -->
+    <!-- 閉じた目（左） -->
+    <path d="M -80 -40 Q -60 -50, -40 -40" 
+          fill="none" stroke="#4B0082" stroke-width="12" stroke-linecap="round"/>
+    <!-- 閉じた目（右） -->
+    <path d="M 40 -40 Q 60 -50, 80 -40" 
+          fill="none" stroke="#4B0082" stroke-width="12" stroke-linecap="round"/>
+    
+    <!-- ほっぺ -->
+    <circle cx="-100" cy="20" r="25" fill="#FFB6C1" opacity="0.6"/>
+    <circle cx="100" cy="20" r="25" fill="#FFB6C1" opacity="0.6"/>
+    
+    <!-- 微笑みの口 -->
+    <path d="M -30 40 Q 0 60, 30 40" 
+          fill="none" stroke="#4B0082" stroke-width="10" stroke-linecap="round"/>
+    
+    <!-- Zzz -->
+    <g transform="translate(180, -100)">
+      <text font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="#FFFFFF">
+        Z
+      </text>
+      <text font-family="Arial, sans-serif" font-size="45" font-weight="bold" fill="#FFFFFF" transform="translate(30, -15)">
+        z
+      </text>
+      <text font-family="Arial, sans-serif" font-size="30" font-weight="bold" fill="#FFFFFF" transform="translate(55, -25)">
+        z
+      </text>
+    </g>
+  </g>
+  
+  <!-- かわいい雲（下部） -->
+  <g transform="translate(512, 700)">
+    <ellipse cx="-100" cy="0" rx="80" ry="50" fill="url(#cloudGradient)"/>
+    <ellipse cx="0" cy="-20" rx="100" ry="60" fill="url(#cloudGradient)"/>
+    <ellipse cx="100" cy="0" rx="80" ry="50" fill="url(#cloudGradient)"/>
+    <ellipse cx="-50" cy="20" rx="70" ry="40" fill="url(#cloudGradient)"/>
+    <ellipse cx="50" cy="20" rx="70" ry="40" fill="url(#cloudGradient)"/>
+  </g>
+  
+  <!-- 小さな星々 -->
+  <g>
+    <!-- 星1 -->
+    <g transform="translate(200, 200)">
+      <path d="M 0 -20 L 5 -5 L 20 0 L 5 5 L 0 20 L -5 5 L -20 0 L -5 -5 Z" 
+            fill="url(#starGradient)"/>
+    </g>
+    
+    <!-- 星2 -->
+    <g transform="translate(800, 250)">
+      <path d="M 0 -15 L 4 -4 L 15 0 L 4 4 L 0 15 L -4 4 L -15 0 L -4 -4 Z" 
+            fill="url(#starGradient)"/>
+    </g>
+    
+    <!-- 星3 -->
+    <g transform="translate(150, 600)">
+      <path d="M 0 -18 L 4.5 -4.5 L 18 0 L 4.5 4.5 L 0 18 L -4.5 4.5 L -18 0 L -4.5 -4.5 Z" 
+            fill="url(#starGradient)"/>
+    </g>
+    
+    <!-- 星4 -->
+    <g transform="translate(850, 650)">
+      <path d="M 0 -12 L 3 -3 L 12 0 L 3 3 L 0 12 L -3 3 L -12 0 L -3 -3 Z" 
+            fill="url(#starGradient)"/>
+    </g>
+  </g>
+</svg>
