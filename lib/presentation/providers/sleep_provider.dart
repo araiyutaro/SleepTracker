@@ -52,6 +52,7 @@ class SleepProvider extends ChangeNotifier {
   Duration get currentDuration => _currentDuration;
   bool get isTracking => _state == SleepTrackingState.tracking;
   SleepRepository get sleepRepository => _sleepRepository;
+  HealthService get healthService => _healthService;
 
   Future<void> _initialize() async {
     await checkActiveSession();
@@ -178,9 +179,15 @@ class SleepProvider extends ChangeNotifier {
         }
       }
       
-      // ヘルスデータに書き込み
+      // ヘルスデータに書き込み（オプション、エラーが発生してもアプリは継続）
       if (endedSession != null) {
-        await _writeToHealthKit(endedSession);
+        try {
+          await _writeToHealthKit(endedSession);
+        } catch (e, stackTrace) {
+          debugPrint('HealthKit書き込みでエラーが発生しましたが、アプリは継続します: $e');
+          debugPrint('Stack trace: $stackTrace');
+          // HealthKit連携に失敗してもアプリは継続
+        }
       }
       
       _currentSession = null;
@@ -205,28 +212,29 @@ class SleepProvider extends ChangeNotifier {
     }
   }
 
-  /// ヘルスキットに睡眠データを書き込み
+  /// ヘルスキットに睡眠データを書き込み（オプション機能）
   Future<void> _writeToHealthKit(SleepSession session) async {
     try {
+      debugPrint('HealthKit書き込み開始');
+      
       if (!_healthService.isInitialized) {
         debugPrint('HealthService not initialized, skipping HealthKit write');
         return;
       }
 
-      // 権限確認
+      // プラットフォームサポート確認
+      bool isSupported = await _healthService.isSupported();
+      if (!isSupported) {
+        debugPrint('HealthKit not supported on this platform, skipping write');
+        return;
+      }
+
+      // 権限確認（ユーザーが明示的に許可していない場合は静かにスキップ）
       bool hasPermissions = await _healthService.hasPermissions();
       if (!hasPermissions) {
-        debugPrint('No HealthKit permissions, requesting...');
-        bool granted = await _healthService.requestPermissions();
-        if (!granted) {
-          debugPrint('HealthKit permissions denied - this may affect data sync');
-          // 権限がなくても睡眠記録は継続できるようにする
-          return;
-        } else {
-          debugPrint('HealthKit permissions granted successfully');
-        }
-      } else {
-        debugPrint('HealthKit permissions already granted');
+        debugPrint('HealthKit permissions not granted, skipping write');
+        debugPrint('ユーザーがHealthKit連携を希望する場合は、設定画面から許可してください');
+        return;
       }
 
       DateTime bedTime = session.startTime;
@@ -237,6 +245,8 @@ class SleepProvider extends ChangeNotifier {
         return;
       }
 
+      debugPrint('HealthKit書き込みデータ準備中...');
+      
       // 睡眠ステージデータの準備
       Duration? deepSleepDuration;
       Duration? lightSleepDuration;
@@ -257,6 +267,8 @@ class SleepProvider extends ChangeNotifier {
         remSleepDuration = Duration(minutes: (totalSleep.inMinutes * 0.20).round());
       }
 
+      debugPrint('HealthKitへの書き込み実行中...');
+      
       // ヘルスキットに書き込み
       bool success = await _healthService.writeSleepStagesData(
         bedTime: bedTime,
@@ -268,17 +280,25 @@ class SleepProvider extends ChangeNotifier {
 
       if (success) {
         debugPrint('Successfully wrote sleep data to HealthKit');
-        // Analyticsイベント送信
-        await AnalyticsService().logCustomEvent('health_data_exported', parameters: {
-          'platform': 'healthkit',
-          'data_type': 'sleep',
-          'duration_minutes': session.duration?.inMinutes ?? 0,
-        });
+        
+        // Analyticsイベント送信（エラーが発生してもアプリは継続）
+        try {
+          await AnalyticsService().logCustomEvent('health_data_exported', parameters: {
+            'platform': 'healthkit',
+            'data_type': 'sleep',
+            'duration_minutes': session.duration?.inMinutes ?? 0,
+          });
+          debugPrint('Analytics event logged successfully');
+        } catch (analyticsError) {
+          debugPrint('Analytics event failed (not critical): $analyticsError');
+        }
       } else {
         debugPrint('Failed to write sleep data to HealthKit');
       }
-    } catch (e) {
-      debugPrint('Error writing to HealthKit: $e');
+    } catch (e, stackTrace) {
+      debugPrint('Error writing to HealthKit (アプリは継続します): $e');
+      debugPrint('Stack trace: $stackTrace');
+      // HealthKit連携でエラーが発生してもアプリの動作には影響しない
     }
   }
 
