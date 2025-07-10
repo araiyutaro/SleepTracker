@@ -77,7 +77,7 @@ class SleepApp extends StatelessWidget {
         home: const SplashScreen(),
         debugShowCheckedModeBanner: false,
         navigatorObservers: [
-          AnalyticsService().observer,
+          if (AnalyticsService().observer != null) AnalyticsService().observer!,
         ],
       ),
     );

@@ -23,9 +23,6 @@ class FirebaseService {
         options: DefaultFirebaseOptions.currentPlatform,
       );
       
-      // Analytics初期化
-      AnalyticsService().initialize();
-      
       print('Firebase初期化完了');
       
       _initialized = true;

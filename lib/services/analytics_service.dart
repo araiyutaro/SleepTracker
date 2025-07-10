@@ -6,15 +6,32 @@ class AnalyticsService {
   factory AnalyticsService() => _instance;
   AnalyticsService._internal();
 
-  late final FirebaseAnalytics _analytics;
-  late final FirebaseAnalyticsObserver _observer;
+  FirebaseAnalytics? _analytics;
+  FirebaseAnalyticsObserver? _observer;
+  bool _initialized = false;
 
-  FirebaseAnalytics get analytics => _analytics;
-  FirebaseAnalyticsObserver get observer => _observer;
+  FirebaseAnalytics? get analytics => _analytics;
+  FirebaseAnalyticsObserver? get observer => _observer;
+  bool get isInitialized => _initialized;
 
   void initialize() {
-    _analytics = FirebaseAnalytics.instance;
-    _observer = FirebaseAnalyticsObserver(analytics: _analytics);
+    try {
+      _analytics = FirebaseAnalytics.instance;
+      _observer = FirebaseAnalyticsObserver(analytics: _analytics!);
+      _initialized = true;
+    } catch (e) {
+      debugPrint('Analytics: Failed to initialize: $e');
+      _analytics = null;
+      _observer = null;
+      _initialized = false;
+    }
+  }
+
+  void initializeStub() {
+    _analytics = null;
+    _observer = null;
+    _initialized = false;
+    debugPrint('Analytics: Initialized in stub mode');
   }
 
   // ユーザープロパティの設定
@@ -24,21 +41,26 @@ class AnalyticsService {
     String? gender,
     String? occupation,
   }) async {
+    if (!_initialized || _analytics == null) {
+      debugPrint('Analytics: User properties skipped (not initialized)');
+      return;
+    }
+    
     try {
       if (userId != null) {
-        await _analytics.setUserId(id: userId);
+        await _analytics!.setUserId(id: userId);
       }
       
       if (ageGroup != null) {
-        await _analytics.setUserProperty(name: 'age_group', value: ageGroup);
+        await _analytics!.setUserProperty(name: 'age_group', value: ageGroup);
       }
       
       if (gender != null) {
-        await _analytics.setUserProperty(name: 'gender', value: gender);
+        await _analytics!.setUserProperty(name: 'gender', value: gender);
       }
       
       if (occupation != null) {
-        await _analytics.setUserProperty(name: 'occupation', value: occupation);
+        await _analytics!.setUserProperty(name: 'occupation', value: occupation);
       }
       
       debugPrint('Analytics: User properties set');
@@ -111,8 +133,17 @@ class AnalyticsService {
 
   // アプリ使用状況イベント
   Future<void> logScreenView(String screenName) async {
-    await _analytics.logScreenView(screenName: screenName);
-    debugPrint('Analytics: Screen view logged: $screenName');
+    if (!_initialized || _analytics == null) {
+      debugPrint('Analytics: Screen view skipped (not initialized): $screenName');
+      return;
+    }
+    
+    try {
+      await _analytics!.logScreenView(screenName: screenName);
+      debugPrint('Analytics: Screen view logged: $screenName');
+    } catch (e) {
+      debugPrint('Analytics: Error logging screen view $screenName: $e');
+    }
   }
 
   Future<void> logAppOpened() async {
@@ -140,8 +171,13 @@ class AnalyticsService {
 
   // プライベートヘルパーメソッド
   Future<void> _logEvent(String eventName, {Map<String, dynamic>? parameters}) async {
+    if (!_initialized || _analytics == null) {
+      debugPrint('Analytics: Event skipped (not initialized): $eventName');
+      return;
+    }
+    
     try {
-      await _analytics.logEvent(
+      await _analytics!.logEvent(
         name: eventName,
         parameters: parameters,
       );
@@ -153,12 +189,31 @@ class AnalyticsService {
 
   // デバッグ情報
   Future<void> setAnalyticsCollectionEnabled(bool enabled) async {
-    await _analytics.setAnalyticsCollectionEnabled(enabled);
-    debugPrint('Analytics: Collection enabled: $enabled');
+    if (!_initialized || _analytics == null) {
+      debugPrint('Analytics: Collection setting skipped (not initialized)');
+      return;
+    }
+    
+    try {
+      await _analytics!.setAnalyticsCollectionEnabled(enabled);
+      debugPrint('Analytics: Collection enabled: $enabled');
+    } catch (e) {
+      debugPrint('Analytics: Error setting collection enabled: $e');
+    }
   }
 
   // アプリの初回起動イベント
   Future<void> logFirstOpen() async {
-    await _analytics.logAppOpen();
+    if (!_initialized || _analytics == null) {
+      debugPrint('Analytics: First open skipped (not initialized)');
+      return;
+    }
+    
+    try {
+      await _analytics!.logAppOpen();
+      debugPrint('Analytics: First open logged');
+    } catch (e) {
+      debugPrint('Analytics: Error logging first open: $e');
+    }
   }
 }

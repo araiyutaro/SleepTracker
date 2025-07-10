@@ -54,7 +54,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyC74XehF-FTCZoMl-EW1x-KxzToBuFBxIE',
-    appId: '1:633993262558:android:311bb88362d247d846994f',
+    appId: '1:633993262558:android:demo',
     messagingSenderId: '633993262558',
     projectId: 'sleep-tracker-app-1751975391',
     authDomain: 'sleep-tracker-app-1751975391.firebaseapp.com',
@@ -68,7 +68,7 @@ class DefaultFirebaseOptions {
     projectId: 'sleep-tracker-app-1751975391',
     authDomain: 'sleep-tracker-app-1751975391.firebaseapp.com',
     storageBucket: 'sleep-tracker-app-1751975391.firebasestorage.app',
-    iosBundleId: 'com.arai.sleep',
+    iosBundleId: 'com.arai.sleep.dev',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -78,6 +78,6 @@ class DefaultFirebaseOptions {
     projectId: 'sleep-tracker-app-1751975391',
     authDomain: 'sleep-tracker-app-1751975391.firebaseapp.com',
     storageBucket: 'sleep-tracker-app-1751975391.firebasestorage.app',
-    iosBundleId: 'com.arai.sleep',
+    iosBundleId: 'com.arai.sleep.dev',
   );
 }
