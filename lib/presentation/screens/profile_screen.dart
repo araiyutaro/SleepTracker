@@ -328,7 +328,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Apple HealthKit / Google Fitと連携して、より詳細な健康データを分析できます。',
+              'Apple HealthKit / Google Fitと連携して、より詳細な健康データを分析できます。\n\n※ この機能はオプションです。連携しなくてもアプリを利用できます。',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Colors.grey[600],
               ),
@@ -336,36 +336,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 20),
             Consumer<SleepProvider>(
               builder: (context, sleepProvider, child) {
-                return Column(
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () => _requestHealthPermissions(sleepProvider),
-                        icon: const Icon(Icons.security),
-                        label: const Text('ヘルスデータ権限を許可'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () => _showHealthSummary(sleepProvider),
-                        icon: const Icon(Icons.analytics),
-                        label: const Text('ヘルスデータを表示'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppTheme.primaryColor,
-                          side: BorderSide(color: AppTheme.primaryColor),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-                  ],
+                return FutureBuilder<bool>(
+                  future: _checkHealthPermissions(sleepProvider),
+                  builder: (context, snapshot) {
+                    final hasPermissions = snapshot.data ?? false;
+                    final isLoading = snapshot.connectionState == ConnectionState.waiting;
+                    
+                    if (isLoading) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                    
+                    return Column(
+                      children: [
+                        if (hasPermissions) ...
+                          _buildPermissionGrantedUI(sleepProvider)
+                        else ...
+                          _buildPermissionNotGrantedUI(sleepProvider),
+                      ],
+                    );
+                  },
                 );
               },
             ),
@@ -375,6 +366,106 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Future<bool> _checkHealthPermissions(SleepProvider sleepProvider) async {
+    try {
+      final healthService = sleepProvider.healthService;
+      if (!healthService.isInitialized) {
+        await healthService.initialize();
+      }
+      return await healthService.hasPermissions();
+    } catch (e) {
+      debugPrint('Error checking health permissions: $e');
+      return false;
+    }
+  }
+  
+  List<Widget> _buildPermissionGrantedUI(SleepProvider sleepProvider) {
+    return [
+      Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.green.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.green.withOpacity(0.3)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.green),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'ヘルスデータ連携が有効です',
+                style: TextStyle(color: Colors.green[700], fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 12),
+      SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: () => _showHealthSummary(sleepProvider),
+          icon: const Icon(Icons.analytics),
+          label: const Text('ヘルスデータを表示'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppTheme.primaryColor,
+            side: BorderSide(color: AppTheme.primaryColor),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+          ),
+        ),
+      ),
+    ];
+  }
+  
+  List<Widget> _buildPermissionNotGrantedUI(SleepProvider sleepProvider) {
+    return [
+      Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.orange.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.orange.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Icon(Icons.info, color: Colors.orange),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'ヘルスデータ連携は未設定です',
+                    style: TextStyle(color: Colors.orange[700], fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '連携しなくてもアプリの機能は利用できます。',
+              style: TextStyle(color: Colors.orange[600], fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 12),
+      SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: () => _requestHealthPermissions(sleepProvider),
+          icon: const Icon(Icons.security),
+          label: const Text('ヘルスデータ連携を設定する'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppTheme.primaryColor,
+            side: BorderSide(color: AppTheme.primaryColor),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+          ),
+        ),
+      ),
+    ];
+  }
+  
   Future<void> _requestHealthPermissions(SleepProvider sleepProvider) async {
     try {
       debugPrint('ProfileScreen: Starting health permissions request...');
@@ -387,16 +478,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(granted 
-              ? 'ヘルスデータ権限が許可されました'
-              : 'ヘルスデータ権限が拒否されました。端末の設定からアプリの権限を確認してください。'),
-            backgroundColor: granted ? Colors.green : Colors.red,
-            duration: Duration(seconds: granted ? 3 : 5),
+              ? 'ヘルスデータ連携が有効になりました。自動でデータが同期されます。'
+              : 'ヘルスデータ連携は設定されませんでした。アプリは通常通りご利用いただけます。'),
+            backgroundColor: granted ? Colors.green : Colors.orange,
+            duration: Duration(seconds: granted ? 4 : 6),
           ),
         );
         
         // 権限が拒否された場合、詳細情報を表示
         if (!granted) {
           _showPermissionDeniedDialog();
+        } else {
+          // 権限が許可された場合、UIを更新
+          setState(() {});
         }
       }
     } catch (e) {
@@ -404,9 +498,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('エラーが発生しました: $e'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 5),
+            content: Text('エラーが発生しましたが、アプリは継続してご利用いただけます。'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 4),
           ),
         );
       }
@@ -417,17 +511,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('ヘルスデータ権限について'),
+        title: const Text('ヘルスデータ連携について'),
         content: const Text(
-          'ヘルスデータ機能を使用するには、以下の手順で権限を許可してください：\n\n'
+          'ヘルスデータ連携はオプション機能です。\n\n'
+          'アプリは連携なしでも睡眠記録、分析、通知などすべての機能をご利用いただけます。\n\n'
+          '連携を希望する場合は、以下の手順で設定できます：\n\n'
           'iOS: 設定 > プライバシーとセキュリティ > ヘルスケア > Sleep\n'
-          'Android: 設定 > アプリと通知 > Sleep > 権限\n\n'
-          'または、端末にHealth Connect/Google Fitアプリがインストールされている必要があります。'
+          'Android: 設定 > アプリと通知 > Sleep > 権限'
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+            child: const Text('理解しました'),
           ),
         ],
       ),
