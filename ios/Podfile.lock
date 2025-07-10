@@ -1,39 +1,39 @@
 PODS:
   - device_info_plus (0.0.1):
     - Flutter
-  - Firebase/Analytics (10.18.0):
+  - Firebase/Analytics (10.25.0):
     - Firebase/Core
-  - Firebase/Core (10.18.0):
+  - Firebase/Core (10.25.0):
     - Firebase/CoreOnly
-    - FirebaseAnalytics (~> 10.18.0)
-  - Firebase/CoreOnly (10.18.0):
-    - FirebaseCore (= 10.18.0)
-  - firebase_analytics (10.8.0):
-    - Firebase/Analytics (= 10.18.0)
+    - FirebaseAnalytics (~> 10.25.0)
+  - Firebase/CoreOnly (10.25.0):
+    - FirebaseCore (= 10.25.0)
+  - firebase_analytics (10.10.7):
+    - Firebase/Analytics (= 10.25.0)
     - firebase_core
     - Flutter
-  - firebase_core (2.24.2):
-    - Firebase/CoreOnly (= 10.18.0)
+  - firebase_core (2.32.0):
+    - Firebase/CoreOnly (= 10.25.0)
     - Flutter
-  - FirebaseAnalytics (10.18.0):
-    - FirebaseAnalytics/AdIdSupport (= 10.18.0)
+  - FirebaseAnalytics (10.25.0):
+    - FirebaseAnalytics/AdIdSupport (= 10.25.0)
     - FirebaseCore (~> 10.0)
     - FirebaseInstallations (~> 10.0)
     - GoogleUtilities/AppDelegateSwizzler (~> 7.11)
     - GoogleUtilities/MethodSwizzler (~> 7.11)
     - GoogleUtilities/Network (~> 7.11)
     - "GoogleUtilities/NSData+zlib (~> 7.11)"
-    - nanopb (< 2.30910.0, >= 2.30908.0)
-  - FirebaseAnalytics/AdIdSupport (10.18.0):
+    - nanopb (< 2.30911.0, >= 2.30908.0)
+  - FirebaseAnalytics/AdIdSupport (10.25.0):
     - FirebaseCore (~> 10.0)
     - FirebaseInstallations (~> 10.0)
-    - GoogleAppMeasurement (= 10.18.0)
+    - GoogleAppMeasurement (= 10.25.0)
     - GoogleUtilities/AppDelegateSwizzler (~> 7.11)
     - GoogleUtilities/MethodSwizzler (~> 7.11)
     - GoogleUtilities/Network (~> 7.11)
     - "GoogleUtilities/NSData+zlib (~> 7.11)"
-    - nanopb (< 2.30910.0, >= 2.30908.0)
-  - FirebaseCore (10.18.0):
+    - nanopb (< 2.30911.0, >= 2.30908.0)
+  - FirebaseCore (10.25.0):
     - FirebaseCoreInternal (~> 10.0)
     - GoogleUtilities/Environment (~> 7.12)
     - GoogleUtilities/Logger (~> 7.12)
@@ -47,31 +47,26 @@ PODS:
   - Flutter (1.0.0)
   - flutter_local_notifications (0.0.1):
     - Flutter
-  - FMDB (2.7.12):
-    - FMDB/standard (= 2.7.12)
-  - FMDB/Core (2.7.12)
-  - FMDB/standard (2.7.12):
-    - FMDB/Core
-  - GoogleAppMeasurement (10.18.0):
-    - GoogleAppMeasurement/AdIdSupport (= 10.18.0)
+  - GoogleAppMeasurement (10.25.0):
+    - GoogleAppMeasurement/AdIdSupport (= 10.25.0)
     - GoogleUtilities/AppDelegateSwizzler (~> 7.11)
     - GoogleUtilities/MethodSwizzler (~> 7.11)
     - GoogleUtilities/Network (~> 7.11)
     - "GoogleUtilities/NSData+zlib (~> 7.11)"
-    - nanopb (< 2.30910.0, >= 2.30908.0)
-  - GoogleAppMeasurement/AdIdSupport (10.18.0):
-    - GoogleAppMeasurement/WithoutAdIdSupport (= 10.18.0)
+    - nanopb (< 2.30911.0, >= 2.30908.0)
+  - GoogleAppMeasurement/AdIdSupport (10.25.0):
+    - GoogleAppMeasurement/WithoutAdIdSupport (= 10.25.0)
     - GoogleUtilities/AppDelegateSwizzler (~> 7.11)
     - GoogleUtilities/MethodSwizzler (~> 7.11)
     - GoogleUtilities/Network (~> 7.11)
     - "GoogleUtilities/NSData+zlib (~> 7.11)"
-    - nanopb (< 2.30910.0, >= 2.30908.0)
-  - GoogleAppMeasurement/WithoutAdIdSupport (10.18.0):
+    - nanopb (< 2.30911.0, >= 2.30908.0)
+  - GoogleAppMeasurement/WithoutAdIdSupport (10.25.0):
     - GoogleUtilities/AppDelegateSwizzler (~> 7.11)
     - GoogleUtilities/MethodSwizzler (~> 7.11)
     - GoogleUtilities/Network (~> 7.11)
     - "GoogleUtilities/NSData+zlib (~> 7.11)"
-    - nanopb (< 2.30910.0, >= 2.30908.0)
+    - nanopb (< 2.30911.0, >= 2.30908.0)
   - GoogleUtilities/AppDelegateSwizzler (7.13.3):
     - GoogleUtilities/Environment
     - GoogleUtilities/Logger
@@ -102,11 +97,11 @@ PODS:
     - GoogleUtilities/Privacy
   - health (1.0.4):
     - Flutter
-  - nanopb (2.30909.1):
-    - nanopb/decode (= 2.30909.1)
-    - nanopb/encode (= 2.30909.1)
-  - nanopb/decode (2.30909.1)
-  - nanopb/encode (2.30909.1)
+  - nanopb (2.30910.0):
+    - nanopb/decode (= 2.30910.0)
+    - nanopb/encode (= 2.30910.0)
+  - nanopb/decode (2.30910.0)
+  - nanopb/encode (2.30910.0)
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -115,9 +110,9 @@ PODS:
   - PromisesObjC (2.4.0)
   - sensors_plus (0.0.1):
     - Flutter
-  - sqflite (0.0.3):
+  - sqflite_darwin (0.0.4):
     - Flutter
-    - FMDB (>= 2.7.5)
+    - FlutterMacOS
   - workmanager (0.0.1):
     - Flutter
 
@@ -128,10 +123,10 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - health (from `.symlinks/plugins/health/ios`)
-  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/ios`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - sensors_plus (from `.symlinks/plugins/sensors_plus/ios`)
-  - sqflite (from `.symlinks/plugins/sqflite/ios`)
+  - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
   - workmanager (from `.symlinks/plugins/workmanager/ios`)
 
 SPEC REPOS:
@@ -141,7 +136,6 @@ SPEC REPOS:
     - FirebaseCore
     - FirebaseCoreInternal
     - FirebaseInstallations
-    - FMDB
     - GoogleAppMeasurement
     - GoogleUtilities
     - nanopb
@@ -161,38 +155,37 @@ EXTERNAL SOURCES:
   health:
     :path: ".symlinks/plugins/health/ios"
   path_provider_foundation:
-    :path: ".symlinks/plugins/path_provider_foundation/ios"
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
   sensors_plus:
     :path: ".symlinks/plugins/sensors_plus/ios"
-  sqflite:
-    :path: ".symlinks/plugins/sqflite/ios"
+  sqflite_darwin:
+    :path: ".symlinks/plugins/sqflite_darwin/darwin"
   workmanager:
     :path: ".symlinks/plugins/workmanager/ios"
 
 SPEC CHECKSUMS:
-  device_info_plus: c6fb39579d0f423935b0c9ce7ee2f44b71b9fce6
-  Firebase: 414ad272f8d02dfbf12662a9d43f4bba9bec2a06
-  firebase_analytics: b3d6dd14c61549a29abb10e9843446a4d8bb53eb
-  firebase_core: 0af4a2b24f62071f9bf283691c0ee41556dcb3f5
-  FirebaseAnalytics: 4d310b35c48eaa4a058ddc04bdca6bdb5dc0fe80
-  FirebaseCore: 2322423314d92f946219c8791674d2f3345b598f
+  device_info_plus: 335f3ce08d2e174b9fdc3db3db0f4e3b1f66bd89
+  Firebase: 0312a2352584f782ea56f66d91606891d4607f06
+  firebase_analytics: e7280be84e7ff1c1e5859bd8e48de410b07e0b73
+  firebase_core: 3b49a055ff54114cae400581c13671fe53936c36
+  FirebaseAnalytics: ec00fe8b93b41dc6fe4a28784b8e51da0647a248
+  FirebaseCore: 7ec4d0484817f12c3373955bc87762d96842d483
   FirebaseCoreInternal: df84dd300b561c27d5571684f389bf60b0a5c934
   FirebaseInstallations: 913cf60d0400ebd5d6b63a28b290372ab44590dd
-  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
-  flutter_local_notifications: 0c0b1ae97e741e1521e4c1629a459d04b9aec743
-  FMDB: 728731dd336af3936ce00f91d9d8495f5718a0e6
-  GoogleAppMeasurement: 70ce9aa438cff1cfb31ea3e660bcc67734cb716e
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_local_notifications: ef18f0537538fcd18e9106b3ddc91cc10b4e579a
+  GoogleAppMeasurement: 9abf64b682732fed36da827aa2a68f0221fd2356
   GoogleUtilities: ea963c370a38a8069cc5f7ba4ca849a60b6d7d15
-  health: 5a380c0f6c4f619535845992993964293962e99e
-  nanopb: d4d75c12cd1316f4a64e3c6963f879ecd4b5e0d5
-  path_provider_foundation: 29f094ae23ebbca9d3d0cec13889cd9060c0e943
-  permission_handler_apple: e76247795d700c14ea09e3a2d8855d41ee80a2e6
+  health: a38a2b7480871e575ef403a8746cb2c08d20f1a4
+  nanopb: 438bc412db1928dac798aa6fd75726007be04262
+  path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
+  permission_handler_apple: 3787117e48f80715ff04a3830ca039283d6a4f29
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  sensors_plus: 4ee32bc7d61a055f27f88d3215ad6b6fb96a2b8e
-  sqflite: 31f7eba61e3074736dff8807a9b41581e4f7f15a
-  workmanager: 0afdcf5628bbde6924c21af7836fed07b42e30e6
+  sensors_plus: 2ba4ccef05473d428576bd640f0409c833a9bdea
+  sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
+  workmanager: 01be2de7f184bd15de93a1812936a2b7f42ef07e
 
 PODFILE CHECKSUM: cfb6ed96d8878e4974534a2a0c4bf69e2e4665c3
 
