@@ -43,7 +43,7 @@ dependencies:
   path: ^1.8.2
   
   # UI/UX
-  fl_chart: ^0.62.0
+  fl_chart: ^1.0.0
   table_calendar: ^3.0.9
   
   # ユーティリティ
