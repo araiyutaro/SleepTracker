@@ -42,12 +42,12 @@ class AppTheme {
         elevation: 2,
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: const CardThemeData(
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.all(Radius.circular(16)),
       ),
-      margin: const EdgeInsets.all(8),
+      margin: EdgeInsets.all(8),
     ),
     textTheme: const TextTheme(
       displayLarge: TextStyle(
@@ -119,7 +119,7 @@ class AppTheme {
         elevation: 2,
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 2,
       color: const Color(0xFF2A2A3E),
       shape: RoundedRectangleBorder(
