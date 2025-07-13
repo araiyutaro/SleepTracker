@@ -1,5 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.arai.sleep">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
     
     <!-- Health Connect API 権限 (Android 14+) -->
     <uses-permission android:name="android.permission.health.READ_SLEEP" />
