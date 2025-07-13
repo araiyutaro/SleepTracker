@@ -24,7 +24,9 @@
       "Bash(pkill:*)",
       "Bash(git push:*)",
       "Bash(mv:*)",
-      "Bash(./gradlew:*)"
+      "Bash(./gradlew:*)",
+      "WebFetch(domain:pub.dev)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": []
   }
