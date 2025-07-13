@@ -6,13 +6,14 @@ class HealthService {
   factory HealthService() => _instance;
   HealthService._internal();
 
-  late final HealthFactory _health;
+  late final Health _health;
   bool _isInitialized = false;
 
   /// ヘルスサービス初期化
   Future<void> initialize() async {
     try {
-      _health = HealthFactory();
+      _health = Health();
+      await _health.configure();
       _isInitialized = true;
       debugPrint('HealthService: Initialized successfully');
     } catch (e) {
@@ -27,6 +28,18 @@ class HealthService {
         debugPrint('HealthService: Initializing before permission request...');
         await initialize();
       }
+
+      final permissions = [
+        HealthDataAccess.READ_WRITE,
+        HealthDataAccess.READ_WRITE,
+        HealthDataAccess.READ_WRITE,
+        HealthDataAccess.READ_WRITE,
+        HealthDataAccess.READ_WRITE,
+        HealthDataAccess.READ_WRITE,
+        HealthDataAccess.READ_WRITE,
+        HealthDataAccess.READ_WRITE,
+        HealthDataAccess.READ_WRITE,
+      ];
 
       final types = [
         HealthDataType.SLEEP_IN_BED,
@@ -43,7 +56,7 @@ class HealthService {
       debugPrint('HealthService: Requesting permissions for ${types.length} health data types');
       
       // プラットフォームサポート確認
-      bool isSupported = await _health.isDataTypeAvailable(HealthDataType.SLEEP_ASLEEP);
+      bool isSupported = Health().isDataTypeAvailable(HealthDataType.SLEEP_ASLEEP);
       debugPrint('HealthService: Sleep data type availability: $isSupported');
       
       if (!isSupported) {
@@ -52,17 +65,17 @@ class HealthService {
       }
       
       debugPrint('HealthService: Requesting authorization from user...');
-      bool requested = await _health.requestAuthorization(types);
+      bool requested = await _health.requestAuthorization(types, permissions: permissions);
       debugPrint('HealthService: Permission request result: $requested');
       
       // 各権限の詳細確認（エラーが発生しても継続）
       try {
-        for (final type in types) {
+        for (int i = 0; i < types.length; i++) {
           try {
-            bool? hasPermission = await _health.hasPermissions([type]);
-            debugPrint('HealthService: Permission for $type: $hasPermission');
+            bool? hasPermission = await _health.hasPermissions([types[i]], permissions: [permissions[i]]);
+            debugPrint('HealthService: Permission for ${types[i]}: $hasPermission');
           } catch (e) {
-            debugPrint('HealthService: Failed to check permission for $type: $e');
+            debugPrint('HealthService: Failed to check permission for ${types[i]}: $e');
           }
         }
       } catch (e) {
@@ -85,6 +98,18 @@ class HealthService {
     }
 
     try {
+      final permissions = [
+        HealthDataAccess.READ_WRITE,
+        HealthDataAccess.READ_WRITE,
+        HealthDataAccess.READ_WRITE,
+        HealthDataAccess.READ_WRITE,
+        HealthDataAccess.READ_WRITE,
+        HealthDataAccess.READ_WRITE,
+        HealthDataAccess.READ_WRITE,
+        HealthDataAccess.READ_WRITE,
+        HealthDataAccess.READ_WRITE,
+      ];
+
       final types = [
         HealthDataType.SLEEP_IN_BED,
         HealthDataType.SLEEP_ASLEEP,
@@ -99,13 +124,13 @@ class HealthService {
       
       debugPrint('HealthService: Checking permissions for ${types.length} health data types');
       
-      bool? hasPermissions = await _health.hasPermissions(types);
+      bool? hasPermissions = await _health.hasPermissions(types, permissions: permissions);
       debugPrint('HealthService: Has permissions result: $hasPermissions');
       
       // 各権限の詳細確認
-      for (final type in types) {
-        bool? hasPermission = await _health.hasPermissions([type]);
-        debugPrint('HealthService: Has permission for $type: $hasPermission');
+      for (int i = 0; i < types.length; i++) {
+        bool? hasPermission = await _health.hasPermissions([types[i]], permissions: [permissions[i]]);
+        debugPrint('HealthService: Has permission for ${types[i]}: $hasPermission');
       }
       
       return hasPermissions ?? false;
@@ -131,10 +156,10 @@ class HealthService {
       debugPrint('HealthService: Writing sleep data - Type: $type, Bed: $bedTime, Wake: $wakeTime');
       
       bool success = await _health.writeHealthData(
-        0, // 睡眠の場合、値は使用されない
-        type,
-        bedTime,
-        wakeTime,
+        value: 0, // 睡眠の場合、値は使用されない
+        type: type,
+        startTime: bedTime,
+        endTime: wakeTime,
       );
 
       debugPrint('HealthService: Sleep data write result: $success');
@@ -162,7 +187,6 @@ class HealthService {
 
     try {
       debugPrint('HealthService: Writing sleep stages data');
-      List<Future<bool>> writes = [];
       int successCount = 0;
       int totalWrites = 0;
 
@@ -262,10 +286,6 @@ class HealthService {
 
   /// 今日のヘルスサマリーを取得
   Future<Map<String, dynamic>> getTodayHealthSummary() async {
-    DateTime now = DateTime.now();
-    DateTime startOfDay = DateTime(now.year, now.month, now.day);
-    DateTime endOfDay = startOfDay.add(const Duration(days: 1));
-
     try {
       // 基本的な空のデータを返す（実際の実装では各種データを取得）
       return {
@@ -295,7 +315,7 @@ class HealthService {
       }
       
       // 基本的な睡眠データタイプがサポートされているか確認
-      bool sleepSupported = await _health.isDataTypeAvailable(HealthDataType.SLEEP_ASLEEP);
+      bool sleepSupported = Health().isDataTypeAvailable(HealthDataType.SLEEP_ASLEEP);
       debugPrint('HealthService: Sleep data type supported: $sleepSupported');
       
       return sleepSupported;

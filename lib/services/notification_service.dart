@@ -55,7 +55,7 @@ class NotificationService {
     bool granted = true;
 
     if (android != null) {
-      granted = await android.requestPermission() ?? false;
+      granted = await android.requestNotificationsPermission() ?? false;
     }
 
     if (ios != null) {
