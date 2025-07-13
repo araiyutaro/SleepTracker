@@ -9,6 +9,7 @@ import 'alarm_settings_screen.dart';
 import '../../core/themes/app_theme.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../services/export_service.dart';
+import '../../utils/dummy_data_generator.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -48,6 +49,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   );
                   break;
+                case 'debug_data':
+                  _addDummyData();
+                  break;
               }
             },
             itemBuilder: (context) => [
@@ -80,6 +84,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: ListTile(
                   leading: Icon(Icons.alarm),
                   title: Text('スマートアラーム'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'debug_data',
+                child: ListTile(
+                  leading: Icon(Icons.bug_report),
+                  title: Text('デモデータ追加'),
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
@@ -782,6 +794,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
           SnackBar(
             content: Text('エクスポートに失敗しました: $e'),
             backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _addDummyData() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const AlertDialog(
+        title: Text('デモデータ追加中...'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('3ヶ月分の睡眠データを生成しています'),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      final sleepProvider = context.read<SleepProvider>();
+      final dummyGenerator = DummyDataGenerator(sleepRepository: sleepProvider.sleepRepository);
+      
+      await dummyGenerator.generateDummySleepData();
+      
+      if (mounted) {
+        Navigator.of(context).pop(); // Loading dialog を閉じる
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('3ヶ月分のデモデータを追加しました！分析タブでご確認ください。'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 4),
+          ),
+        );
+
+        // データを更新
+        await sleepProvider.loadRecentSessions();
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop(); // Loading dialog を閉じる
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('デモデータの追加に失敗しました: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
