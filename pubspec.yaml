@@ -71,6 +71,12 @@ dependencies:
   
   # ファイル操作
   path_provider: ^2.1.1
+  
+  # 設定保存
+  shared_preferences: ^2.2.2
+  
+  # URL起動
+  url_launcher: ^6.2.2
 
 dev_dependencies:
   flutter_test:
