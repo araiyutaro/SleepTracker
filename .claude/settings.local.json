@@ -26,7 +26,13 @@
       "Bash(mv:*)",
       "Bash(./gradlew:*)",
       "WebFetch(domain:pub.dev)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(export:*)",
+      "Bash(brew list:*)",
+      "Bash(echo $PATH)",
+      "Bash(grep:*)",
+      "Bash(rbenv versions:*)",
+      "Bash(brew install:*)"
     ],
     "deny": []
   }
