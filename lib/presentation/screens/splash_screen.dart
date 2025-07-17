@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/themes/app_theme.dart';
 import '../providers/user_provider.dart';
 import 'main_screen.dart';
+import 'research_consent_screen.dart';
 import 'onboarding/onboarding_welcome_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -29,6 +31,18 @@ class _SplashScreenState extends State<SplashScreen> {
       await Future.delayed(const Duration(seconds: 2));
       
       if (mounted) {
+        // 研究同意状態をチェック
+        final prefs = await SharedPreferences.getInstance();
+        final hasSeenConsentScreen = prefs.containsKey('research_consent_given');
+        
+        if (!hasSeenConsentScreen) {
+          // 初回起動 -> 研究同意画面へ
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const ResearchConsentScreen()),
+          );
+          return;
+        }
+        
         // オンボーディング完了状態をチェック
         final profile = userProvider.profile;
         debugPrint('Profile exists: ${profile != null}');
@@ -52,9 +66,9 @@ class _SplashScreenState extends State<SplashScreen> {
     } catch (e) {
       debugPrint('アプリ初期化エラー: $e');
       if (mounted) {
-        // エラーが発生した場合はオンボーディングから開始
+        // エラーが発生した場合は研究同意画面から開始
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const OnboardingWelcomeScreen()),
+          MaterialPageRoute(builder: (context) => const ResearchConsentScreen()),
         );
       }
     }
