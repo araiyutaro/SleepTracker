@@ -5,6 +5,7 @@ import '../domain/entities/daily_aggregate_data.dart';
 import '../domain/entities/sleep_statistics.dart';
 import '../domain/entities/user_profile.dart';
 import '../domain/entities/sleep_session.dart';
+import '../data/models/sleep_record_model.dart';
 import 'database_service.dart';
 
 /// 個人分析サービス
@@ -16,17 +17,17 @@ class PersonalAnalyticsService {
   Future<SleepStatistics> calculateBasicStatistics(String userId) async {
     final db = await _databaseService.database;
     
-    // 過去30日間の集計データを取得
+    // 過去30日間の睡眠セッションデータを取得
     final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30));
     final result = await db.query(
-      'daily_sleep_aggregates',
-      where: 'user_id = ? AND date >= ?',
-      whereArgs: [userId, thirtyDaysAgo.toIso8601String().split('T')[0]],
-      orderBy: 'date DESC',
+      'sleep_records',
+      where: 'start_time >= ?',
+      whereArgs: [thirtyDaysAgo.millisecondsSinceEpoch],
+      orderBy: 'start_time DESC',
     );
 
     if (result.isEmpty) {
-      return SleepStatistics(
+      return const SleepStatistics(
         averageSleepDuration: Duration.zero,
         averageSleepQuality: 0.0,
         consistencyScore: 0.0,
@@ -35,17 +36,16 @@ class PersonalAnalyticsService {
       );
     }
 
-    final dailyData = result.map((map) => DailyAggregateData.fromMap(map)).toList();
+    final sessions = result.map((map) => SleepRecordModel.fromMap(map).toEntity()).toList();
     
-    // 基本統計を計算
-    final validDurations = dailyData
-        .where((data) => data.sleepDuration != null)
-        .map((data) => data.sleepDuration!)
+    // セッションから統計データを計算
+    final validDurations = sessions
+        .map((session) => session.calculatedDuration)
         .toList();
     
-    final validQualities = dailyData
-        .where((data) => data.sleepQuality != null)
-        .map((data) => data.sleepQuality!)
+    final validQualities = sessions
+        .where((session) => session.qualityScore != null)
+        .map((session) => session.qualityScore!)
         .toList();
 
     final averageDuration = validDurations.isNotEmpty
@@ -56,14 +56,14 @@ class PersonalAnalyticsService {
         ? validQualities.reduce((a, b) => a + b) / validQualities.length
         : 0.0;
 
-    final consistencyScore = _calculateConsistencyScore(dailyData);
+    final consistencyScore = _calculateConsistencyScore(sessions);
 
     return SleepStatistics(
       averageSleepDuration: averageDuration,
       averageSleepQuality: averageQuality,
       consistencyScore: consistencyScore,
       weeklyTrends: {},
-      totalRecords: dailyData.length,
+      totalRecords: sessions.length,
       shortestSleep: validDurations.isNotEmpty ? validDurations.reduce((a, b) => a.inMinutes < b.inMinutes ? a : b) : null,
       longestSleep: validDurations.isNotEmpty ? validDurations.reduce((a, b) => a.inMinutes > b.inMinutes ? a : b) : null,
       highestQuality: validQualities.isNotEmpty ? validQualities.reduce(max) : null,
@@ -82,26 +82,24 @@ class PersonalAnalyticsService {
       final weekEnd = weekStart.add(const Duration(days: 7));
       
       final result = await db.query(
-        'daily_sleep_aggregates',
-        where: 'user_id = ? AND date >= ? AND date < ?',
+        'sleep_records',
+        where: 'start_time >= ? AND start_time < ?',
         whereArgs: [
-          userId,
-          weekStart.toIso8601String().split('T')[0],
-          weekEnd.toIso8601String().split('T')[0],
+          weekStart.millisecondsSinceEpoch,
+          weekEnd.millisecondsSinceEpoch,
         ],
       );
 
       if (result.isNotEmpty) {
-        final weekData = result.map((map) => DailyAggregateData.fromMap(map)).toList();
+        final weekSessions = result.map((map) => SleepRecordModel.fromMap(map).toEntity()).toList();
         
-        final validDurations = weekData
-            .where((data) => data.sleepDuration != null)
-            .map((data) => data.sleepDuration!)
+        final validDurations = weekSessions
+            .map((session) => session.calculatedDuration)
             .toList();
         
-        final validQualities = weekData
-            .where((data) => data.sleepQuality != null)
-            .map((data) => data.sleepQuality!)
+        final validQualities = weekSessions
+            .where((session) => session.qualityScore != null)
+            .map((session) => session.qualityScore!)
             .toList();
 
         if (validDurations.isNotEmpty && validQualities.isNotEmpty) {
@@ -114,7 +112,7 @@ class PersonalAnalyticsService {
             weekStart: weekStart,
             averageDuration: averageDuration,
             averageQuality: averageQuality,
-            recordCount: weekData.length,
+            recordCount: weekSessions.length,
           ));
         }
       }
@@ -130,36 +128,41 @@ class PersonalAnalyticsService {
     // 過去30日間のデータを取得
     final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30));
     final result = await db.query(
-      'daily_sleep_aggregates',
-      where: 'user_id = ? AND date >= ?',
-      whereArgs: [userId, thirtyDaysAgo.toIso8601String().split('T')[0]],
+      'sleep_records',
+      where: 'start_time >= ?',
+      whereArgs: [thirtyDaysAgo.millisecondsSinceEpoch],
     );
 
-    final dailyData = result.map((map) => DailyAggregateData.fromMap(map)).toList();
+    final sessions = result.map((map) => SleepRecordModel.fromMap(map).toEntity()).toList();
     
-    final weekdayData = dailyData.where((data) => data.dayType == DayType.weekday).toList();
-    final weekendData = dailyData.where((data) => data.dayType == DayType.weekend).toList();
+    final weekdaySessions = sessions.where((session) {
+      final weekday = session.startTime.weekday;
+      return weekday >= 1 && weekday <= 5; // Monday to Friday
+    }).toList();
+    
+    final weekendSessions = sessions.where((session) {
+      final weekday = session.startTime.weekday;
+      return weekday == 6 || weekday == 7; // Saturday and Sunday
+    }).toList();
 
     // 平日の平均を計算
-    final weekdayDurations = weekdayData
-        .where((data) => data.sleepDuration != null)
-        .map((data) => data.sleepDuration!)
+    final weekdayDurations = weekdaySessions
+        .map((session) => session.calculatedDuration)
         .toList();
     
-    final weekdayQualities = weekdayData
-        .where((data) => data.sleepQuality != null)
-        .map((data) => data.sleepQuality!)
+    final weekdayQualities = weekdaySessions
+        .where((session) => session.qualityScore != null)
+        .map((session) => session.qualityScore!)
         .toList();
 
     // 休日の平均を計算
-    final weekendDurations = weekendData
-        .where((data) => data.sleepDuration != null)
-        .map((data) => data.sleepDuration!)
+    final weekendDurations = weekendSessions
+        .map((session) => session.calculatedDuration)
         .toList();
     
-    final weekendQualities = weekendData
-        .where((data) => data.sleepQuality != null)
-        .map((data) => data.sleepQuality!)
+    final weekendQualities = weekendSessions
+        .where((session) => session.qualityScore != null)
+        .map((session) => session.qualityScore!)
         .toList();
 
     final weekdayAvgDuration = weekdayDurations.isNotEmpty
@@ -268,9 +271,9 @@ class PersonalAnalyticsService {
     // 過去7日間のデータを取得
     final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
     final result = await db.query(
-      'daily_sleep_aggregates',
-      where: 'user_id = ? AND date >= ?',
-      whereArgs: [userId, sevenDaysAgo.toIso8601String().split('T')[0]],
+      'sleep_records',
+      where: 'start_time >= ?',
+      whereArgs: [sevenDaysAgo.millisecondsSinceEpoch],
     );
 
     if (result.isEmpty) {
@@ -283,7 +286,7 @@ class PersonalAnalyticsService {
       );
     }
 
-    final dailyData = result.map((map) => DailyAggregateData.fromMap(map)).toList();
+    final sessions = result.map((map) => SleepRecordModel.fromMap(map).toEntity()).toList();
     
     int sleepDurationGoalAchieved = 0;
     int bedtimeGoalAchieved = 0;
@@ -292,33 +295,29 @@ class PersonalAnalyticsService {
     // 目標睡眠時間を分に変換
     final targetSleepMinutes = (userProfile.targetSleepHours * 60).round();
     
-    for (final data in dailyData) {
+    for (final session in sessions) {
       // 睡眠時間目標達成チェック
-      if (data.sleepDuration != null) {
-        final actualMinutes = data.sleepDuration!.inMinutes;
-        // 目標時間の±30分以内なら達成とみなす
-        if ((actualMinutes - targetSleepMinutes).abs() <= 30) {
-          sleepDurationGoalAchieved++;
-        }
+      final actualMinutes = session.calculatedDuration.inMinutes;
+      // 目標時間の±30分以内なら達成とみなす
+      if ((actualMinutes - targetSleepMinutes).abs() <= 30) {
+        sleepDurationGoalAchieved++;
       }
 
       // 就寝時刻目標達成チェック
-      if (data.bedtime != null && userProfile.targetBedtime != null) {
-        final targetMinutes = userProfile.targetBedtime!.hour * 60 + userProfile.targetBedtime!.minute;
-        final actualMinutes = data.bedtime!.hour * 60 + data.bedtime!.minute;
-        // 目標時刻の±30分以内なら達成とみなす
-        if ((actualMinutes - targetMinutes).abs() <= 30) {
-          bedtimeGoalAchieved++;
-        }
+      final targetMinutes = userProfile.targetBedtime.hour * 60 + userProfile.targetBedtime.minute;
+      final actualBedtimeMinutes = session.startTime.hour * 60 + session.startTime.minute;
+      // 目標時刻の±30分以内なら達成とみなす
+      if ((actualBedtimeMinutes - targetMinutes).abs() <= 30) {
+        bedtimeGoalAchieved++;
       }
 
       // 睡眠品質目標達成チェック（80%以上を目標とする）
-      if (data.sleepQuality != null && data.sleepQuality! >= 80) {
+      if (session.qualityScore != null && session.qualityScore! >= 80) {
         qualityGoalAchieved++;
       }
     }
 
-    final totalDays = dailyData.length;
+    final totalDays = sessions.length;
     final overallProgress = totalDays > 0 
         ? (sleepDurationGoalAchieved + bedtimeGoalAchieved + qualityGoalAchieved) / (totalDays * 3) 
         : 0.0;
@@ -367,13 +366,12 @@ class PersonalAnalyticsService {
   }
 
   /// 規則性スコアを計算
-  double _calculateConsistencyScore(List<DailyAggregateData> dailyData) {
-    if (dailyData.length < 7) return 0.0;
+  double _calculateConsistencyScore(List<SleepSession> sessions) {
+    if (sessions.length < 7) return 0.0;
 
     // 就寝時刻の標準偏差を計算
-    final bedtimes = dailyData
-        .where((d) => d.bedtime != null)
-        .map((d) => d.bedtime!.hour * 60 + d.bedtime!.minute)
+    final bedtimes = sessions
+        .map((session) => session.startTime.hour * 60 + session.startTime.minute)
         .toList();
 
     if (bedtimes.isEmpty) return 0.0;

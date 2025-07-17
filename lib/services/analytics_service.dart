@@ -94,22 +94,105 @@ class AnalyticsService {
 
   // 睡眠記録関連イベント
   Future<void> logSleepRecordStarted() async {
-    await _logEvent('sleep_record_started');
+    await _logEvent('sleep_record_started', parameters: {
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+      'source': 'automatic',
+    });
   }
 
   Future<void> logSleepRecordCompleted({
     required int durationMinutes,
     double? qualityScore,
+    int? wakeQuality,
+    bool hasMovementData = false,
+    bool hasSleepStages = false,
   }) async {
     await _logEvent('sleep_record_completed', parameters: {
       'duration_minutes': durationMinutes,
-      if (qualityScore != null) 'quality_score': qualityScore,
+      'duration_hours': (durationMinutes / 60).round(),
+      if (qualityScore != null) 'quality_score': qualityScore.round(),
+      if (wakeQuality != null) 'wake_quality': wakeQuality,
+      'has_movement_data': hasMovementData,
+      'has_sleep_stages': hasSleepStages,
+      'completion_timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+  }
+
+  Future<void> logManualSleepRecordAdded({
+    required int durationMinutes,
+    double? qualityScore,
+    int? wakeQuality,
+  }) async {
+    await _logEvent('manual_sleep_record_added', parameters: {
+      'duration_minutes': durationMinutes,
+      'duration_hours': (durationMinutes / 60).round(),
+      if (qualityScore != null) 'quality_score': qualityScore.round(),
+      if (wakeQuality != null) 'wake_quality': wakeQuality,
+      'source': 'manual',
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+  }
+
+  Future<void> logSleepRecordEdited({
+    required String sessionId,
+    required int durationMinutes,
+    double? qualityScore,
+    int? wakeQuality,
+  }) async {
+    await _logEvent('sleep_record_edited', parameters: {
+      'session_id': sessionId.substring(0, 8), // 匿名化
+      'duration_minutes': durationMinutes,
+      'duration_hours': (durationMinutes / 60).round(),
+      if (qualityScore != null) 'quality_score': qualityScore.round(),
+      if (wakeQuality != null) 'wake_quality': wakeQuality,
+      'edit_timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+  }
+
+  Future<void> logSleepRecordDeleted() async {
+    await _logEvent('sleep_record_deleted', parameters: {
+      'delete_timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+  }
+
+  Future<void> logWakeQualityRated(int rating) async {
+    await _logEvent('wake_quality_rated', parameters: {
+      'rating': rating,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
     });
   }
 
   Future<void> logSleepDataExported(String format) async {
     await _logEvent('sleep_data_exported', parameters: {
       'export_format': format,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+  }
+
+  Future<void> logDemoDataGenerated(int recordCount) async {
+    await _logEvent('demo_data_generated', parameters: {
+      'record_count': recordCount,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+  }
+
+  Future<void> logAllDataCleared() async {
+    await _logEvent('all_data_cleared', parameters: {
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+  }
+
+  Future<void> logBackupCreated(int recordCount) async {
+    await _logEvent('backup_created', parameters: {
+      'record_count': recordCount,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+  }
+
+  Future<void> logBackupRestored(int recordCount) async {
+    await _logEvent('backup_restored', parameters: {
+      'record_count': recordCount,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
     });
   }
 
@@ -131,6 +214,38 @@ class AnalyticsService {
     });
   }
 
+  // UIインタラクション関連イベント
+  Future<void> logButtonTapped(String buttonName, {Map<String, dynamic>? context}) async {
+    await _logEvent('button_tapped', parameters: {
+      'button_name': buttonName,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+      if (context != null) ...context,
+    });
+  }
+
+  Future<void> logNavigationEvent(String fromScreen, String toScreen) async {
+    await _logEvent('navigation', parameters: {
+      'from_screen': fromScreen,
+      'to_screen': toScreen,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+  }
+
+  Future<void> logDialogOpened(String dialogName) async {
+    await _logEvent('dialog_opened', parameters: {
+      'dialog_name': dialogName,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+  }
+
+  Future<void> logFeatureUsed(String featureName, {Map<String, dynamic>? metadata}) async {
+    await _logEvent('feature_used', parameters: {
+      'feature_name': featureName,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+      if (metadata != null) ...metadata,
+    });
+  }
+
   // アプリ使用状況イベント
   Future<void> logScreenView(String screenName) async {
     if (!_initialized || _analytics == null) {
@@ -147,12 +262,20 @@ class AnalyticsService {
   }
 
   Future<void> logAppOpened() async {
-    await _logEvent('app_opened');
+    await _logEvent('app_opened', parameters: {
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
   }
 
-  Future<void> logFeatureUsed(String featureName) async {
-    await _logEvent('feature_used', parameters: {
-      'feature_name': featureName,
+  Future<void> logAppBackgrounded() async {
+    await _logEvent('app_backgrounded', parameters: {
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+  }
+
+  Future<void> logAppForegrounded() async {
+    await _logEvent('app_foregrounded', parameters: {
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
     });
   }
 
