@@ -4,6 +4,7 @@ class SleepSession {
   final DateTime? endTime;
   final Duration? duration;
   final double? qualityScore;
+  final int? wakeQuality; // 目覚めの質 (1-5段階)
   final List<MovementData> movements;
   final DateTime createdAt;
   final SleepStageData? sleepStages;
@@ -14,6 +15,7 @@ class SleepSession {
     this.endTime,
     this.duration,
     this.qualityScore,
+    this.wakeQuality,
     List<MovementData>? movements,
     DateTime? createdAt,
     this.sleepStages,
@@ -36,6 +38,7 @@ class SleepSession {
     DateTime? endTime,
     Duration? duration,
     double? qualityScore,
+    int? wakeQuality,
     List<MovementData>? movements,
     DateTime? createdAt,
     SleepStageData? sleepStages,
@@ -46,6 +49,7 @@ class SleepSession {
       endTime: endTime ?? this.endTime,
       duration: duration ?? this.duration,
       qualityScore: qualityScore ?? this.qualityScore,
+      wakeQuality: wakeQuality ?? this.wakeQuality,
       movements: movements ?? this.movements,
       createdAt: createdAt ?? this.createdAt,
       sleepStages: sleepStages ?? this.sleepStages,

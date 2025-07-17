@@ -21,7 +21,7 @@ class DatabaseService {
 
       return await openDatabase(
         path,
-        version: 4,
+        version: 5,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onOpen: (db) async {
@@ -44,6 +44,7 @@ class DatabaseService {
           end_time INTEGER,
           duration_minutes INTEGER,
           quality_score REAL,
+          wake_quality INTEGER,
           movements_json TEXT,
           created_at INTEGER NOT NULL,
           sleep_stages_json TEXT
@@ -232,6 +233,12 @@ class DatabaseService {
           print('Database: Updated profile ID from $currentId to default_user');
         }
       }
+    }
+    
+    // バージョン4→5: 目覚めの質カラムを追加
+    if (oldVersion < 5) {
+      await db.execute('ALTER TABLE sleep_records ADD COLUMN wake_quality INTEGER');
+      print('Database: Added wake_quality column to sleep_records table');
     }
   }
 

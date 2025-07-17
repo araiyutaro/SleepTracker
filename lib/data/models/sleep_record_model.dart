@@ -6,6 +6,7 @@ class SleepRecordModel {
   final int? endTimeEpoch;
   final int? durationMinutes;
   final double? qualityScore;
+  final int? wakeQuality;
   final String? movementsJson;
   final int createdAtEpoch;
   final String? sleepStagesJson;
@@ -16,6 +17,7 @@ class SleepRecordModel {
     this.endTimeEpoch,
     this.durationMinutes,
     this.qualityScore,
+    this.wakeQuality,
     this.movementsJson,
     required this.createdAtEpoch,
     this.sleepStagesJson,
@@ -28,6 +30,7 @@ class SleepRecordModel {
       endTimeEpoch: entity.endTime?.millisecondsSinceEpoch,
       durationMinutes: entity.duration?.inMinutes,
       qualityScore: entity.qualityScore,
+      wakeQuality: entity.wakeQuality,
       movementsJson: _movementsToJson(entity.movements),
       createdAtEpoch: entity.createdAt.millisecondsSinceEpoch,
       sleepStagesJson: _sleepStagesToJson(entity.sleepStages),
@@ -45,6 +48,7 @@ class SleepRecordModel {
           ? Duration(minutes: durationMinutes!)
           : null,
       qualityScore: qualityScore,
+      wakeQuality: wakeQuality,
       movements: _movementsFromJson(movementsJson),
       createdAt: DateTime.fromMillisecondsSinceEpoch(createdAtEpoch),
       sleepStages: _sleepStagesFromJson(sleepStagesJson),
@@ -58,6 +62,7 @@ class SleepRecordModel {
       'end_time': endTimeEpoch,
       'duration_minutes': durationMinutes,
       'quality_score': qualityScore,
+      'wake_quality': wakeQuality,
       'movements_json': movementsJson,
       'created_at': createdAtEpoch,
       'sleep_stages_json': sleepStagesJson,
@@ -71,6 +76,7 @@ class SleepRecordModel {
       endTimeEpoch: map['end_time'] as int?,
       durationMinutes: map['duration_minutes'] as int?,
       qualityScore: map['quality_score'] as double?,
+      wakeQuality: map['wake_quality'] as int?,
       movementsJson: map['movements_json'] as String?,
       createdAtEpoch: map['created_at'] as int,
       sleepStagesJson: map['sleep_stages_json'] as String?,
