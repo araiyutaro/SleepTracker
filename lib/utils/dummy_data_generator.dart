@@ -14,13 +14,28 @@ class DummyDataGenerator {
   Future<void> generateDummySleepData() async {
     print('ダミー睡眠データの生成を開始...');
     
+    // 既存のセッションを取得して重複チェック用に日付を抽出
+    final existingSessions = await _sleepRepository.getSessions();
+    final existingDates = existingSessions
+        .map((session) => DateTime(session.startTime.year, session.startTime.month, session.startTime.day))
+        .toSet();
+    
     final endDate = DateTime.now();
     final startDate = endDate.subtract(const Duration(days: 90)); // 3ヶ月前
     
     final sessions = <SleepSession>[];
+    int skippedCount = 0;
     
     for (int i = 0; i < 90; i++) {
       final date = startDate.add(Duration(days: i));
+      final dateOnly = DateTime(date.year, date.month, date.day);
+      
+      // 既存データがある日付はスキップ
+      if (existingDates.contains(dateOnly)) {
+        skippedCount++;
+        print('日付 ${date.toIso8601String().split('T')[0]} はスキップ（既存データあり）');
+        continue;
+      }
       
       // 平日・休日で睡眠パターンを変える
       final isWeekend = date.weekday == DateTime.saturday || date.weekday == DateTime.sunday;
@@ -39,7 +54,7 @@ class DummyDataGenerator {
       }
     }
     
-    print('ダミーデータの生成完了: ${sessions.length}件');
+    print('ダミーデータの生成完了: ${sessions.length}件生成、${skippedCount}件スキップ');
   }
 
   SleepSession _generateSleepSession(DateTime date, bool isWeekend) {
@@ -72,6 +87,9 @@ class DummyDataGenerator {
     // 睡眠品質スコア計算
     final qualityScore = _calculateQualityScore(duration);
     
+    // 目覚めの質を生成（品質スコアと連動）
+    final wakeQuality = _generateWakeQuality(qualityScore);
+    
     // 動きデータ生成
     final movements = _generateMovements(startTime, duration);
     
@@ -84,6 +102,7 @@ class DummyDataGenerator {
       endTime: endTime,
       duration: duration,
       qualityScore: qualityScore,
+      wakeQuality: wakeQuality,
       movements: movements,
       createdAt: startTime,
       sleepStages: sleepStages,
@@ -112,6 +131,18 @@ class DummyDataGenerator {
     } else {
       return 35 + _random.nextDouble() * 15; // 35-50
     }
+  }
+
+  int _generateWakeQuality(double qualityScore) {
+    // 睡眠品質スコアに基づいて目覚めの質を決定（1-5段階）
+    // 高い品質ほど良い目覚めになりやすくするが、一定のランダム性も保持
+    final baseQuality = (qualityScore / 20).round(); // 80% -> 4, 60% -> 3 など
+    final randomOffset = _random.nextInt(3) - 1; // -1, 0, 1のランダム調整
+    
+    final wakeQuality = baseQuality + randomOffset;
+    
+    // 1-5の範囲に制限
+    return wakeQuality.clamp(1, 5);
   }
 
   List<MovementData> _generateMovements(DateTime startTime, Duration duration) {
