@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/user_provider.dart';
 import '../providers/sleep_provider.dart';
 import '../widgets/achievement_card.dart';
@@ -9,6 +11,7 @@ import 'alarm_settings_screen.dart';
 import '../../core/themes/app_theme.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../services/export_service.dart';
+import '../../services/analytics_service.dart';
 import '../../utils/dummy_data_generator.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -52,6 +55,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 case 'debug_data':
                   _addDummyData();
                   break;
+                case 'clear_all_data':
+                  _showClearAllDataDialog();
+                  break;
+                case 'research_consent':
+                  _showResearchConsentDialog();
+                  break;
               }
             },
             itemBuilder: (context) => [
@@ -92,6 +101,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: ListTile(
                   leading: Icon(Icons.bug_report),
                   title: Text('デモデータ追加'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'clear_all_data',
+                child: ListTile(
+                  leading: Icon(Icons.delete_forever, color: Colors.red),
+                  title: Text('すべてのデータを削除', style: TextStyle(color: Colors.red)),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'research_consent',
+                child: ListTile(
+                  leading: Icon(Icons.science),
+                  title: Text('研究協力設定'),
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
@@ -823,6 +848,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       
       await dummyGenerator.generateDummySleepData();
       
+      // Analytics: デモデータ生成イベント
+      await AnalyticsService().logDemoDataGenerated(90); // 3ヶ月分
+      
       if (mounted) {
         Navigator.of(context).pop(); // Loading dialog を閉じる
         
@@ -834,8 +862,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         );
 
-        // データを更新
+        // 全プロバイダーのデータを更新
         await sleepProvider.loadRecentSessions();
+        
+        // 他の画面にデータ更新を通知するために、notifyListenersを明示的に呼び出し
+        sleepProvider.notifyListeners();
       }
     } catch (e) {
       if (mounted) {
@@ -850,5 +881,238 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       }
     }
+  }
+
+  void _showClearAllDataDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.warning, color: AppTheme.errorColor),
+            const SizedBox(width: 8),
+            const Text('データ削除の確認'),
+          ],
+        ),
+        content: const Text(
+          'すべての睡眠データを削除しますか？\n\n'
+          '・睡眠記録\n'
+          '・分析データ\n'
+          '・統計情報\n\n'
+          'この操作は取り消せません。',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _clearAllData();
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: AppTheme.errorColor,
+            ),
+            child: const Text('削除する'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _clearAllData() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const AlertDialog(
+        title: Text('データ削除中...'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('すべての睡眠データを削除しています'),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      final sleepProvider = context.read<SleepProvider>();
+      
+      // すべてのセッションを取得して削除
+      final sessions = await sleepProvider.sleepRepository.getSessions();
+      final sessionCount = sessions.length;
+      
+      for (final session in sessions) {
+        await sleepProvider.deleteSession(session.id);
+      }
+      
+      // Analytics: 全データ削除イベント
+      await AnalyticsService().logAllDataCleared();
+      
+      if (mounted) {
+        Navigator.of(context).pop(); // Loading dialog を閉じる
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('すべての睡眠データを削除しました'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+
+        // データ更新を通知
+        await sleepProvider.loadRecentSessions();
+        sleepProvider.notifyListeners();
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop(); // Loading dialog を閉じる
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('データ削除に失敗しました: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _showResearchConsentDialog() async {
+    final prefs = await SharedPreferences.getInstance();
+    final consentGiven = prefs.getBool('research_consent_given') ?? false;
+    final consentDate = prefs.getString('research_consent_date');
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.science, color: AppTheme.primaryColor),
+            const SizedBox(width: 8),
+            const Text('研究協力設定'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '現在の設定: ${consentGiven ? "研究協力に同意済み" : "研究協力には不参加"}',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: consentGiven ? AppTheme.successColor : Colors.orange,
+              ),
+            ),
+            if (consentDate != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                '設定日時: ${DateFormat('yyyy年MM月dd日 HH:mm').format(DateTime.parse(consentDate))}',
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
+            ],
+            const SizedBox(height: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '研究協力設定を変更したい場合は、以下までお問い合わせください：\n\n'
+                  '研究責任者：新井雄太郎',
+                ),
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: () => _launchContactEmail(),
+                  child: Text(
+                    'メール：bm242001@g.hit-u.ac.jp',
+                    style: TextStyle(
+                      color: AppTheme.primaryColor,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (consentGiven) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                ),
+                child: const Text(
+                  '同意を撤回される場合は、上記のメールアドレスまでご連絡ください。撤回後、収集したデータは速やかに削除いたします。',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('閉じる'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _launchContactEmail() async {
+    final userProvider = context.read<UserProvider>();
+    final profile = userProvider.userProfile;
+    final userId = profile?.id ?? 'unknown-user';
+    
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: 'bm242001@g.hit-u.ac.jp',
+      query: _encodeQueryParameters(<String, String>{
+        'subject': 'SleepTracker研究協力について',
+        'body': '\n\n\nUserId: $userId',
+      }),
+    );
+
+    try {
+      if (await canLaunchUrl(emailUri)) {
+        await launchUrl(emailUri);
+        
+        // Analytics: メール起動イベント
+        await AnalyticsService().logCustomEvent('contact_email_opened', parameters: {
+          'context': 'profile_screen',
+          'timestamp': DateTime.now().millisecondsSinceEpoch,
+        });
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('メールアプリを開けませんでした。手動でコピーしてください。'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error launching email: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('メールアプリを開けませんでした。'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  String _encodeQueryParameters(Map<String, String> params) {
+    return params.entries
+        .map((MapEntry<String, String> e) =>
+            '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+        .join('&');
   }
 }
