@@ -17,8 +17,7 @@ class AppTheme {
     colorScheme: const ColorScheme.light(
       primary: primaryColor,
       secondary: secondaryColor,
-      background: backgroundColor,
-      surface: Colors.white,
+      surface: backgroundColor,
       error: errorColor,
     ),
     appBarTheme: const AppBarTheme(
@@ -91,11 +90,10 @@ class AppTheme {
     scaffoldBackgroundColor: darkBackgroundColor,
     brightness: Brightness.dark,
     fontFamily: 'Roboto',
-    colorScheme: ColorScheme.dark(
+    colorScheme: const ColorScheme.dark(
       primary: primaryColor,
       secondary: secondaryColor,
-      background: darkBackgroundColor,
-      surface: const Color(0xFF2A2A3E),
+      surface: darkBackgroundColor,
       error: errorColor,
     ),
     appBarTheme: const AppBarTheme(

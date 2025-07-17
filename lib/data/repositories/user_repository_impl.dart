@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:uuid/uuid.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../datasources/local_data_source.dart';
@@ -7,7 +6,6 @@ import '../models/user_profile_model.dart';
 
 class UserRepositoryImpl implements UserRepository {
   final LocalDataSource _localDataSource;
-  final _uuid = const Uuid();
   static const String _defaultUserId = 'default_user';
 
   UserRepositoryImpl({

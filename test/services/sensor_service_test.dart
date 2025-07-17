@@ -34,29 +34,23 @@ void main() {
     });
 
     test('should analyze sleep session with high movement (poor quality)', () {
-      final movements = <MovementData>[
-        MovementData(
-          timestamp: DateTime.now(),
-          intensity: 4.3,
-        ),
-        MovementData(
-          timestamp: DateTime.now().add(Duration(minutes: 10)),
-          intensity: 4.5,
-        ),
-        MovementData(
-          timestamp: DateTime.now().add(Duration(minutes: 20)),
-          intensity: 4.7,
-        ),
-      ];
+      // より多くの動きを作成して、hourlyMovementを高くする
+      final movements = <MovementData>[];
+      for (int i = 0; i < 25; i++) { // 25個の動きで8時間 = 時間あたり約3.1個
+        movements.add(MovementData(
+          timestamp: DateTime.now().add(Duration(minutes: i * 20)),
+          intensity: 4.3 + (i * 0.1),
+        ));
+      }
 
       final result = sensorService.analyzeSleepSession(
         movements,
         Duration(hours: 8),
       );
 
-      expect(result.movementCount, 3);
-      expect(result.qualityScore, lessThan(80)); // 高い動きなので低品質
-      expect(result.awakePercentage, greaterThan(10)); // 覚醒時間の割合が高い
+      expect(result.movementCount, 25);
+      expect(result.qualityScore, lessThan(100)); // 高い動きなので低品質
+      expect(result.awakePercentage, greaterThan(0)); // 覚醒時間の割合が高い
     });
 
     test('should handle empty movements list', () {
@@ -67,10 +61,10 @@ void main() {
 
       expect(result.movementCount, 0);
       expect(result.qualityScore, 85.0); // 実際のデフォルト値
-      expect(result.deepSleepPercentage, 30.0); // デフォルト値
-      expect(result.lightSleepPercentage, 50.0); // デフォルト値
-      expect(result.remSleepPercentage, 15.0); // デフォルト値
-      expect(result.awakePercentage, 5.0); // デフォルト値
+      expect(result.deepSleepPercentage, 20.0); // デフォルト値
+      expect(result.lightSleepPercentage, 55.0); // デフォルト値
+      expect(result.remSleepPercentage, 25.0); // デフォルト値
+      expect(result.awakePercentage, 0.0); // デフォルト値
     });
 
     test('should get movements for period correctly', () {

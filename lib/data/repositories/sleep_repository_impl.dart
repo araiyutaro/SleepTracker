@@ -1,4 +1,3 @@
-import 'package:uuid/uuid.dart';
 import '../../domain/entities/sleep_session.dart';
 import '../../domain/repositories/sleep_repository.dart';
 import '../datasources/local_data_source.dart';
@@ -6,7 +5,6 @@ import '../models/sleep_record_model.dart';
 
 class SleepRepositoryImpl implements SleepRepository {
   final LocalDataSource _localDataSource;
-  final _uuid = const Uuid();
 
   SleepRepositoryImpl({
     required LocalDataSource localDataSource,
