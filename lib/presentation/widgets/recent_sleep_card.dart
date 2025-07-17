@@ -3,15 +3,18 @@ import 'package:intl/intl.dart';
 import '../../domain/entities/sleep_session.dart';
 import '../../core/themes/app_theme.dart';
 import 'sleep_stages_chart.dart';
+import 'edit_sleep_dialog.dart';
 
 class RecentSleepCard extends StatelessWidget {
   final SleepSession session;
   final VoidCallback? onDelete;
+  final Function(SleepSession)? onEdit;
 
   const RecentSleepCard({
     Key? key,
     required this.session,
     this.onDelete,
+    this.onEdit,
   }) : super(key: key);
 
   @override
@@ -21,12 +24,12 @@ class RecentSleepCard extends StatelessWidget {
 
     return Card(
       child: InkWell(
-        onTap: session.sleepStages != null ? () => _showDetailDialog(context) : null,
+        onTap: () => _showDetailDialog(context),
         borderRadius: BorderRadius.circular(16),
         child: Stack(
           children: [
             Padding(
-              padding: EdgeInsets.fromLTRB(16.0, 16.0, onDelete != null ? 56.0 : 16.0, 16.0),
+              padding: EdgeInsets.fromLTRB(16.0, 16.0, (onDelete != null || onEdit != null) ? 56.0 : 16.0, 16.0),
               child: Row(
                 children: [
               Container(
@@ -60,16 +63,14 @@ class RecentSleepCard extends StatelessWidget {
                             color: Colors.grey[600],
                           ),
                     ),
-                    if (session.sleepStages != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        'タップで詳細表示',
-                        style: TextStyle(
-                          color: AppTheme.primaryColor,
-                          fontSize: 12,
-                        ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'タップで詳細表示',
+                      style: TextStyle(
+                        color: AppTheme.primaryColor,
+                        fontSize: 12,
                       ),
-                    ],
+                    ),
                   ],
                 ),
               ),
@@ -102,34 +103,61 @@ class RecentSleepCard extends StatelessWidget {
                       ],
                     ),
                   ],
-                  if (session.sleepStages != null) ...[
-                    const SizedBox(height: 4),
-                    Icon(
-                      Icons.analytics,
-                      size: 16,
-                      color: AppTheme.primaryColor,
-                    ),
-                  ],
+                  const SizedBox(height: 4),
+                  Icon(
+                    Icons.analytics,
+                    size: 16,
+                    color: AppTheme.primaryColor,
+                  ),
                 ],
               ),
                 ],
               ),
             ),
-            if (onDelete != null)
+            if (onDelete != null || onEdit != null)
               Positioned(
                 top: 8,
                 right: 8,
-                child: IconButton(
+                child: PopupMenuButton<String>(
                   icon: Icon(
-                    Icons.delete_outline,
+                    Icons.more_vert,
                     color: Colors.grey[600],
                     size: 20,
                   ),
-                  onPressed: () => _showDeleteConfirmDialog(context),
-                  style: IconButton.styleFrom(
-                    minimumSize: const Size(32, 32),
-                    padding: EdgeInsets.zero,
-                  ),
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'edit':
+                        _showEditDialog(context);
+                        break;
+                      case 'delete':
+                        _showDeleteConfirmDialog(context);
+                        break;
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    if (onEdit != null)
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit, size: 20),
+                            SizedBox(width: 8),
+                            Text('編集'),
+                          ],
+                        ),
+                      ),
+                    if (onDelete != null)
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete_outline, size: 20),
+                            SizedBox(width: 8),
+                            Text('削除'),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
               ),
           ],
@@ -159,6 +187,9 @@ class RecentSleepCard extends StatelessWidget {
         return Dialog(
           child: Container(
             width: double.maxFinite,
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
+            ),
             padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -167,9 +198,11 @@ class RecentSleepCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      dateFormat.format(session.startTime),
-                      style: Theme.of(context).textTheme.headlineMedium,
+                    Expanded(
+                      child: Text(
+                        dateFormat.format(session.startTime),
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
                     ),
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
@@ -178,13 +211,37 @@ class RecentSleepCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
-                if (session.sleepStages != null)
-                  SleepStagesChart(sleepStages: session.sleepStages!),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSleepDetails(context),
+                        if (session.sleepStages != null) ...[
+                          const SizedBox(height: 16),
+                          SleepStagesChart(sleepStages: session.sleepStages!),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  void _showEditDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => EditSleepDialog(
+        session: session,
+        onSave: (updatedSession) {
+          onEdit?.call(updatedSession);
+        },
+      ),
     );
   }
 
@@ -212,5 +269,159 @@ class RecentSleepCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildSleepDetails(BuildContext context) {
+    final timeFormat = DateFormat('HH:mm');
+    
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildDetailItem(
+                      '睡眠時間',
+                      _formatDuration(session.calculatedDuration),
+                      Icons.access_time,
+                      AppTheme.primaryColor,
+                    ),
+                  ),
+                  if (session.qualityScore != null) ...[
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildDetailItem(
+                        '睡眠品質',
+                        '${session.qualityScore!.toInt()}%',
+                        Icons.star,
+                        _getQualityColor(session.qualityScore),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildDetailItem(
+                      '就寝時刻',
+                      timeFormat.format(session.startTime),
+                      Icons.bedtime,
+                      AppTheme.secondaryColor,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildDetailItem(
+                      '起床時刻',
+                      session.endTime != null 
+                          ? timeFormat.format(session.endTime!)
+                          : '継続中',
+                      Icons.wb_sunny,
+                      Colors.orange,
+                    ),
+                  ),
+                ],
+              ),
+              if (session.wakeQuality != null) ...[
+                const SizedBox(height: 16),
+                _buildDetailItem(
+                  '目覚めの質',
+                  _getWakeQualityText(session.wakeQuality!),
+                  _getWakeQualityIcon(session.wakeQuality!),
+                  _getWakeQualityColor(session.wakeQuality!),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetailItem(String label, String value, IconData icon, Color color) {
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 24),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            color: Colors.grey,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  String _getWakeQualityText(int rating) {
+    switch (rating) {
+      case 1:
+        return 'とても悪い';
+      case 2:
+        return '悪い';
+      case 3:
+        return '普通';
+      case 4:
+        return '良い';
+      case 5:
+        return 'とても良い';
+      default:
+        return '不明';
+    }
+  }
+
+  IconData _getWakeQualityIcon(int rating) {
+    switch (rating) {
+      case 1:
+        return Icons.sentiment_very_dissatisfied;
+      case 2:
+        return Icons.sentiment_dissatisfied;
+      case 3:
+        return Icons.sentiment_neutral;
+      case 4:
+        return Icons.sentiment_satisfied;
+      case 5:
+        return Icons.sentiment_very_satisfied;
+      default:
+        return Icons.help_outline;
+    }
+  }
+
+  Color _getWakeQualityColor(int rating) {
+    switch (rating) {
+      case 1:
+        return AppTheme.errorColor;
+      case 2:
+        return Colors.orange;
+      case 3:
+        return Colors.amber;
+      case 4:
+        return AppTheme.primaryColor;
+      case 5:
+        return AppTheme.successColor;
+      default:
+        return Colors.grey;
+    }
   }
 }

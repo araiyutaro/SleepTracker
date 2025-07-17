@@ -4,7 +4,9 @@ import '../providers/sleep_provider.dart';
 import '../widgets/sleep_button.dart';
 import '../widgets/sleep_timer_display.dart';
 import '../widgets/recent_sleep_card.dart';
+import '../widgets/manual_sleep_entry_dialog.dart';
 import '../../core/themes/app_theme.dart';
+import '../../services/analytics_service.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -46,8 +48,10 @@ class HomeScreen extends StatelessWidget {
                     isLoading: sleepProvider.state == SleepTrackingState.loading,
                     onPressed: () {
                       if (sleepProvider.isTracking) {
-                        sleepProvider.stopTracking();
+                        AnalyticsService().logButtonTapped('sleep_stop_button');
+                        sleepProvider.stopTracking(context);
                       } else {
+                        AnalyticsService().logButtonTapped('sleep_start_button');
                         sleepProvider.startTracking();
                       }
                     },
@@ -83,6 +87,7 @@ class HomeScreen extends StatelessWidget {
                             child: RecentSleepCard(
                               session: session,
                               onDelete: () => sleepProvider.deleteSession(session.id),
+                              onEdit: (updatedSession) => sleepProvider.updateSession(updatedSession),
                             ),
                           ),
                         ),
@@ -92,6 +97,20 @@ class HomeScreen extends StatelessWidget {
             );
           },
         ),
+      ),
+      floatingActionButton: Consumer<SleepProvider>(
+        builder: (context, sleepProvider, child) {
+          return FloatingActionButton(
+            onPressed: () {
+              AnalyticsService().logButtonTapped('manual_sleep_fab');
+              _showManualSleepEntryDialog(context, sleepProvider);
+            },
+            backgroundColor: AppTheme.secondaryColor,
+            foregroundColor: Colors.white,
+            tooltip: '手動で睡眠記録を追加',
+            child: const Icon(Icons.add),
+          );
+        },
       ),
     );
   }
@@ -118,5 +137,25 @@ class HomeScreen extends StatelessWidget {
         return '今日も良い一日を';
       }
     }
+  }
+
+  void _showManualSleepEntryDialog(BuildContext context, SleepProvider sleepProvider) {
+    AnalyticsService().logDialogOpened('manual_sleep_entry_dialog');
+    
+    showDialog(
+      context: context,
+      builder: (context) => ManualSleepEntryDialog(
+        onSave: (session) {
+          sleepProvider.addManualSession(session);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('手動睡眠記録を追加しました'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        },
+      ),
+    );
   }
 }

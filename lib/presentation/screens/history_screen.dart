@@ -4,6 +4,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import '../providers/sleep_provider.dart';
 import '../widgets/recent_sleep_card.dart';
+import '../widgets/manual_sleep_entry_dialog.dart';
 import '../../domain/entities/sleep_session.dart';
 import '../../core/themes/app_theme.dart';
 
@@ -29,6 +30,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
     _firstDay = DateTime.now().subtract(const Duration(days: 365));
     _lastDay = DateTime.now().add(const Duration(days: 365));
     _loadSleepHistory();
+    
+    // SleepProviderの変更を監視
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<SleepProvider>().addListener(_onSleepDataChanged);
+    });
+  }
+
+  @override
+  void dispose() {
+    context.read<SleepProvider>().removeListener(_onSleepDataChanged);
+    super.dispose();
+  }
+
+  void _onSleepDataChanged() {
+    if (mounted) {
+      _loadSleepHistory();
+    }
   }
 
   void _loadSleepHistory() async {
@@ -146,6 +164,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showManualEntryDialog(),
+        tooltip: '睡眠記録を追加',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  void _showManualEntryDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => ManualSleepEntryDialog(
+        onSave: (session) async {
+          final sleepProvider = context.read<SleepProvider>();
+          await sleepProvider.addManualSession(session);
+          _loadSleepHistory();
+        },
+      ),
     );
   }
 
@@ -186,6 +222,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
             onDelete: () async {
               final sleepProvider = context.read<SleepProvider>();
               await sleepProvider.deleteSession(sessionsForSelectedDay[index].id);
+              _loadSleepHistory();
+            },
+            onEdit: (updatedSession) async {
+              final sleepProvider = context.read<SleepProvider>();
+              await sleepProvider.updateSession(updatedSession);
               _loadSleepHistory();
             },
           ),
