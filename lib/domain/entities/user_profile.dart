@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 class UserProfile {
   final String id;
@@ -27,7 +28,7 @@ class UserProfile {
   final bool isOnboardingCompleted;
 
   UserProfile({
-    required this.id,
+    String? id,
     this.nickname,
     this.ageGroup,
     this.gender,
@@ -51,7 +52,8 @@ class UserProfile {
     DateTime? updatedAt,
     NotificationSettings? notificationSettings,
     this.isOnboardingCompleted = false,
-  })  : targetBedtime = targetBedtime ?? const TimeOfDay(hour: 23, minute: 0),
+  })  : id = id ?? const Uuid().v4(),
+        targetBedtime = targetBedtime ?? const TimeOfDay(hour: 23, minute: 0),
         targetWakeTime = targetWakeTime ?? const TimeOfDay(hour: 7, minute: 0),
         sleepConcerns = sleepConcerns ?? [],
         phoneUsageContent = phoneUsageContent ?? [],
