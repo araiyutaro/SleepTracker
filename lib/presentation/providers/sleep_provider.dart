@@ -7,6 +7,7 @@ import '../../services/sensor_service.dart';
 import '../../services/permission_service.dart';
 import '../../services/analytics_service.dart';
 import '../../services/health_service.dart';
+import '../widgets/wake_quality_dialog.dart';
 import 'user_provider.dart';
 
 enum SleepTrackingState {
@@ -114,7 +115,7 @@ class SleepProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> stopTracking() async {
+  Future<void> stopTracking([BuildContext? context]) async {
     try {
       _state = SleepTrackingState.loading;
       _errorMessage = null;
@@ -160,11 +161,19 @@ class SleepProvider extends ChangeNotifier {
       final endedSession = await _endSleepTracking.execute();
       debugPrint('Sleep session ended successfully: ${endedSession.id}');
       
+      // 目覚めの質入力ダイアログを表示
+      if (context != null && endedSession != null) {
+        _showWakeQualityDialog(context, endedSession);
+      }
+      
       // Analytics: 睡眠記録完了イベント
       if (endedSession != null) {
         await AnalyticsService().logSleepRecordCompleted(
           durationMinutes: endedSession.duration?.inMinutes ?? 0,
           qualityScore: endedSession.qualityScore,
+          wakeQuality: endedSession.wakeQuality,
+          hasMovementData: endedSession.movements.isNotEmpty,
+          hasSleepStages: endedSession.sleepStages != null,
         );
       }
       
@@ -395,10 +404,92 @@ class SleepProvider extends ChangeNotifier {
       await _sleepRepository.deleteSession(sessionId);
       debugPrint('Sleep session deleted successfully');
       
+      // Analytics: 睡眠記録削除イベント
+      await AnalyticsService().logSleepRecordDeleted();
+      
       await loadRecentSessions();
     } catch (e) {
       debugPrint('Failed to delete sleep session: $e');
       _errorMessage = 'セッションの削除に失敗しました: $e';
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateSession(SleepSession session) async {
+    try {
+      debugPrint('Updating sleep session: ${session.id}');
+      await _sleepRepository.updateSession(session);
+      debugPrint('Sleep session updated successfully');
+      
+      // Analytics: 睡眠記録編集イベント
+      await AnalyticsService().logSleepRecordEdited(
+        sessionId: session.id,
+        durationMinutes: session.duration?.inMinutes ?? 0,
+        qualityScore: session.qualityScore,
+        wakeQuality: session.wakeQuality,
+      );
+      
+      await loadRecentSessions();
+    } catch (e) {
+      debugPrint('Failed to update sleep session: $e');
+      _errorMessage = 'セッションの更新に失敗しました: $e';
+      notifyListeners();
+    }
+  }
+
+  Future<void> addManualSession(SleepSession session) async {
+    try {
+      debugPrint('Adding manual sleep session: ${session.id}');
+      await _sleepRepository.startSession(session);
+      debugPrint('Manual sleep session added successfully');
+      
+      // Analytics: 手動睡眠記録追加イベント
+      await AnalyticsService().logManualSleepRecordAdded(
+        durationMinutes: session.duration?.inMinutes ?? 0,
+        qualityScore: session.qualityScore,
+        wakeQuality: session.wakeQuality,
+      );
+      
+      await loadRecentSessions();
+    } catch (e) {
+      debugPrint('Failed to add manual sleep session: $e');
+      _errorMessage = '手動セッションの追加に失敗しました: $e';
+      notifyListeners();
+    }
+  }
+
+  void _showWakeQualityDialog(BuildContext context, SleepSession session) {
+    // Analytics: 目覚めの質ダイアログ表示
+    AnalyticsService().logDialogOpened('wake_quality_dialog');
+    
+    // UI更新を次のフレームまで遅延
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => WakeQualityDialog(
+          onRated: (int wakeQuality) {
+            _updateSessionWithWakeQuality(session, wakeQuality);
+            // Analytics: 目覚めの質評価
+            AnalyticsService().logWakeQualityRated(wakeQuality);
+          },
+        ),
+      );
+    });
+  }
+
+  Future<void> _updateSessionWithWakeQuality(SleepSession session, int wakeQuality) async {
+    try {
+      final updatedSession = session.copyWith(wakeQuality: wakeQuality);
+      await _sleepRepository.updateSession(updatedSession);
+      
+      // 最新のセッションリストを再読み込み
+      await loadRecentSessions();
+      
+      debugPrint('Wake quality updated for session ${session.id}: $wakeQuality');
+    } catch (e) {
+      debugPrint('Failed to update wake quality: $e');
+      _errorMessage = '目覚めの質の更新に失敗しました: $e';
       notifyListeners();
     }
   }

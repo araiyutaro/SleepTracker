@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../services/notification_service.dart';
+import '../../services/analytics_service.dart';
 
 class UserProvider extends ChangeNotifier {
   final UserRepository _userRepository;
@@ -29,7 +30,7 @@ class UserProvider extends ChangeNotifier {
     
     try {
       await _loadUserProfile();
-      _scheduleNotifications();
+      await _scheduleNotifications();
     } catch (e) {
       debugPrint('UserProfile initialization failed: $e');
     }
@@ -61,7 +62,7 @@ class UserProvider extends ChangeNotifier {
 
     await _userRepository.saveUserProfile(updatedProfile);
     _userProfile = updatedProfile;
-    _scheduleNotifications();
+    await _scheduleNotifications();
     notifyListeners();
   }
 
@@ -74,7 +75,7 @@ class UserProvider extends ChangeNotifier {
 
     await _userRepository.saveUserProfile(updatedProfile);
     _userProfile = updatedProfile;
-    _scheduleNotifications();
+    await _scheduleNotifications();
     notifyListeners();
   }
 
@@ -92,31 +93,32 @@ class UserProvider extends ChangeNotifier {
     return await _notificationService.requestPermissions();
   }
 
-  void _scheduleNotifications() {
+  Future<void> _scheduleNotifications() async {
     if (_userProfile == null) return;
 
     try {
       final settings = _userProfile!.notificationSettings;
 
       if (settings.bedtimeReminderEnabled) {
-        _notificationService.scheduleBedtimeReminder(
+        await _notificationService.scheduleBedtimeReminder(
           bedtime: _userProfile!.targetBedtime,
           reminderMinutes: settings.bedtimeReminderMinutes,
         );
       }
 
       if (settings.wakeUpAlarmEnabled) {
-        _notificationService.scheduleWakeUpAlarm(
+        await _notificationService.scheduleWakeUpAlarm(
           wakeTime: _userProfile!.targetWakeTime,
           enabled: true,
         );
       }
 
       if (settings.weeklyReportEnabled) {
-        _notificationService.scheduleWeeklyReport();
+        await _notificationService.scheduleWeeklyReport();
       }
     } catch (e) {
       debugPrint('Failed to schedule notifications: $e');
+      // テスト環境では通知サービスが利用できないため、エラーを無視
     }
   }
 
@@ -141,8 +143,17 @@ class UserProvider extends ChangeNotifier {
     debugPrint('UserProvider: isOnboardingCompleted: ${profile.isOnboardingCompleted}');
     await _userRepository.saveUserProfile(profile);
     debugPrint('UserProvider: Profile saved to repository');
+    
+    // Analytics: ユーザー属性を設定
+    await AnalyticsService().setUserProperties(
+      userId: profile.id,
+      ageGroup: profile.ageGroup,
+      gender: profile.gender,
+      occupation: profile.occupation,
+    );
+    
     _userProfile = profile;
-    _scheduleNotifications();
+    await _scheduleNotifications();
     notifyListeners();
     debugPrint('UserProvider: State updated and listeners notified');
   }
