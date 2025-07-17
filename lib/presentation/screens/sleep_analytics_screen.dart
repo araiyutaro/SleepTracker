@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/themes/app_theme.dart';
+import '../providers/sleep_provider.dart';
 import '../../domain/entities/sleep_statistics.dart';
 import '../../services/personal_analytics_service.dart';
 import '../widgets/analytics_card.dart';
@@ -33,6 +34,29 @@ class _SleepAnalyticsScreenState extends State<SleepAnalyticsScreen> {
   void initState() {
     super.initState();
     _loadAnalyticsData();
+    
+    // SleepProviderの変更を監視
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = context.read<SleepProvider>();
+      provider.addListener(_onSleepDataChanged);
+    });
+  }
+
+  @override
+  void dispose() {
+    try {
+      final provider = context.read<SleepProvider>();
+      provider.removeListener(_onSleepDataChanged);
+    } catch (_) {
+      // プロバイダーが既に削除されている場合は無視
+    }
+    super.dispose();
+  }
+
+  void _onSleepDataChanged() {
+    if (mounted) {
+      _loadAnalyticsData();
+    }
   }
 
   Future<void> _loadAnalyticsData() async {
@@ -74,8 +98,6 @@ class _SleepAnalyticsScreenState extends State<SleepAnalyticsScreen> {
       appBar: AppBar(
         title: const Text('睡眠分析'),
         centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -134,27 +156,30 @@ class _SleepAnalyticsScreenState extends State<SleepAnalyticsScreen> {
             const SizedBox(height: 16),
             
             // 目標達成度
-            if (_goalProgress != null)
+            if (_goalProgress != null) ...[
               _buildGoalProgressCard(),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
+            ],
             
             // 睡眠時間推移
             _buildTrendCard(),
             const SizedBox(height: 16),
             
             // 平日/休日比較
-            if (_patternAnalysis != null)
+            if (_patternAnalysis != null) ...[
               _buildPatternAnalysisCard(),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
+            ],
             
             // 改善提案
-            if (_recommendations != null && _recommendations!.isNotEmpty)
+            if (_recommendations != null && _recommendations!.isNotEmpty) ...[
               _buildRecommendationsCard(),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
+            ],
             
             // 詳細統計
             _buildDetailedStatsCard(),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -191,7 +216,28 @@ class _SleepAnalyticsScreenState extends State<SleepAnalyticsScreen> {
       icon: Icons.trending_up,
       child: _weeklyTrends != null && _weeklyTrends!.isNotEmpty
           ? SleepTrendChart(weeklyTrends: _weeklyTrends!)
-          : const Text('データが不足しています'),
+          : Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.trending_up,
+                      size: 48,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'データが不足しています',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 

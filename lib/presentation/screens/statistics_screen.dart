@@ -24,6 +24,23 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   void initState() {
     super.initState();
     _loadStatistics();
+    
+    // SleepProviderの変更を監視
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<SleepProvider>().addListener(_onSleepDataChanged);
+    });
+  }
+
+  @override
+  void dispose() {
+    context.read<SleepProvider>().removeListener(_onSleepDataChanged);
+    super.dispose();
+  }
+
+  void _onSleepDataChanged() {
+    if (mounted) {
+      _loadStatistics();
+    }
   }
 
   void _loadStatistics() async {
@@ -39,34 +56,42 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('統計'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.date_range),
-            onPressed: _selectDateRange,
-          ),
-        ],
-      ),
-      body: _sessions.isEmpty
-          ? _buildEmptyState()
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildDateRangeCard(),
-                  const SizedBox(height: 16),
-                  _buildSummaryCards(),
-                  const SizedBox(height: 24),
-                  _buildSleepDurationChart(),
-                  const SizedBox(height: 24),
-                  _buildSleepQualityChart(),
-                ],
+    return Consumer<SleepProvider>(
+      builder: (context, sleepProvider, child) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('統計'),
+            centerTitle: true,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.date_range),
+                onPressed: _selectDateRange,
               ),
-            ),
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: _loadStatistics,
+              ),
+            ],
+          ),
+          body: _sessions.isEmpty
+              ? _buildEmptyState()
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildDateRangeCard(),
+                      const SizedBox(height: 16),
+                      _buildSummaryCards(),
+                      const SizedBox(height: 24),
+                      _buildSleepDurationChart(),
+                      const SizedBox(height: 24),
+                      _buildSleepQualityChart(),
+                    ],
+                  ),
+                ),
+        );
+      },
     );
   }
 

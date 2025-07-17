@@ -25,7 +25,7 @@ class SleepStagesChart extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             SizedBox(
-              height: 200,
+              height: 160,
               child: Row(
                 children: [
                   Expanded(
@@ -33,12 +33,12 @@ class SleepStagesChart extends StatelessWidget {
                     child: PieChart(
                       PieChartData(
                         sectionsSpace: 2,
-                        centerSpaceRadius: 40,
+                        centerSpaceRadius: 30,
                         sections: _buildPieChartSections(),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: _buildLegend(context),
                   ),
@@ -59,7 +59,7 @@ class SleepStagesChart extends StatelessWidget {
         color: const Color(0xFF2E5BBA),
         value: sleepStages.deepSleepPercentage,
         title: '${sleepStages.deepSleepPercentage.toStringAsFixed(0)}%',
-        radius: 50,
+        radius: 40,
         titleStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
@@ -70,7 +70,7 @@ class SleepStagesChart extends StatelessWidget {
         color: const Color(0xFF6B92F0),
         value: sleepStages.lightSleepPercentage,
         title: '${sleepStages.lightSleepPercentage.toStringAsFixed(0)}%',
-        radius: 50,
+        radius: 40,
         titleStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
@@ -81,7 +81,7 @@ class SleepStagesChart extends StatelessWidget {
         color: const Color(0xFFFFD93D),
         value: sleepStages.remSleepPercentage,
         title: '${sleepStages.remSleepPercentage.toStringAsFixed(0)}%',
-        radius: 50,
+        radius: 40,
         titleStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
@@ -92,7 +92,7 @@ class SleepStagesChart extends StatelessWidget {
         color: const Color(0xFFFF6B6B),
         value: sleepStages.awakePercentage,
         title: '${sleepStages.awakePercentage.toStringAsFixed(0)}%',
-        radius: 50,
+        radius: 40,
         titleStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
@@ -105,6 +105,7 @@ class SleepStagesChart extends StatelessWidget {
   Widget _buildLegend(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildLegendItem(
@@ -112,19 +113,19 @@ class SleepStagesChart extends StatelessWidget {
           const Color(0xFF2E5BBA),
           '${sleepStages.deepSleepPercentage.toStringAsFixed(1)}%',
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         _buildLegendItem(
           '浅い睡眠',
           const Color(0xFF6B92F0),
           '${sleepStages.lightSleepPercentage.toStringAsFixed(1)}%',
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         _buildLegendItem(
           'REM睡眠',
           const Color(0xFFFFD93D),
           '${sleepStages.remSleepPercentage.toStringAsFixed(1)}%',
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         _buildLegendItem(
           '覚醒',
           const Color(0xFFFF6B6B),
@@ -135,31 +136,35 @@ class SleepStagesChart extends StatelessWidget {
   }
 
   Widget _buildLegendItem(String label, Color color, String percentage) {
-    return Row(
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
+    return Flexible(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            label,
-            style: const TextStyle(fontSize: 12),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 11),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-        ),
-        Text(
-          percentage,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
+          Text(
+            percentage,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

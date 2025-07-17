@@ -62,34 +62,44 @@ class SleepTrendChart extends StatelessWidget {
   }
 
   Widget _buildWeekBar(BuildContext context, WeeklyTrend trend, int maxDuration) {
+    final chartHeight = 120.0; // チャートの高さを調整
     final durationHeight = maxDuration > 0
-        ? (trend.averageDuration.inMinutes / maxDuration) * 180
+        ? (trend.averageDuration.inMinutes / maxDuration) * chartHeight
         : 0.0;
     
-    final qualityHeight = (trend.averageQuality / 100) * 180;
+    final qualityHeight = (trend.averageQuality / 100) * chartHeight;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         // データ表示
-        Text(
-          '${trend.averageDuration.inHours}h${trend.averageDuration.inMinutes.remainder(60)}m',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.bold,
+        Flexible(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '${trend.averageDuration.inHours}h${trend.averageDuration.inMinutes.remainder(60)}m',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+              ),
+              Text(
+                '${trend.averageQuality.toInt()}%',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.grey[600],
+                  fontSize: 10,
+                ),
+              ),
+            ],
           ),
         ),
-        Text(
-          '${trend.averageQuality.toInt()}%',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.grey[600],
-          ),
-        ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         
         // バーチャート
-        Container(
+        SizedBox(
           width: double.infinity,
-          height: 180,
+          height: chartHeight,
           child: Stack(
             alignment: Alignment.bottomCenter,
             children: [
@@ -115,13 +125,14 @@ class SleepTrendChart extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         
         // 週ラベル
         Text(
           _formatWeekLabel(trend.weekStart),
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: Colors.grey[600],
+            fontSize: 10,
           ),
         ),
       ],
