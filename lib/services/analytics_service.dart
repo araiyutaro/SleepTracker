@@ -302,7 +302,7 @@ class AnalyticsService {
     try {
       await _analytics!.logEvent(
         name: eventName,
-        parameters: parameters,
+        parameters: parameters?.cast<String, Object>(),
       );
       debugPrint('Analytics: Event logged: $eventName${parameters != null ? ' with parameters: $parameters' : ''}');
     } catch (e) {
