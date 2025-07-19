@@ -276,10 +276,10 @@ class _OnboardingCompletionScreenState extends State<OnboardingCompletionScreen>
         occupation: widget.occupation,
       );
       
-      // メイン画面に遷移（全ての画面をクリア）
+      // 睡眠リテラシーテスト画面に遷移（全ての画面をクリア）
       if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const MainScreen()),
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/sleep-literacy-test-intro',
           (route) => false,
         );
       }
