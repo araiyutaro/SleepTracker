@@ -26,6 +26,10 @@ class UserProfile {
   final DateTime updatedAt;
   final NotificationSettings notificationSettings;
   final bool isOnboardingCompleted;
+  final int? sleepLiteracyScore;
+  final DateTime? sleepLiteracyTestDate;
+  final int? sleepLiteracyTestDurationMinutes;
+  final Map<String, Map<String, int>>? sleepLiteracyCategoryScores;
 
   UserProfile({
     String? id,
@@ -52,6 +56,10 @@ class UserProfile {
     DateTime? updatedAt,
     NotificationSettings? notificationSettings,
     this.isOnboardingCompleted = false,
+    this.sleepLiteracyScore,
+    this.sleepLiteracyTestDate,
+    this.sleepLiteracyTestDurationMinutes,
+    this.sleepLiteracyCategoryScores,
   })  : id = id ?? const Uuid().v4(),
         targetBedtime = targetBedtime ?? const TimeOfDay(hour: 23, minute: 0),
         targetWakeTime = targetWakeTime ?? const TimeOfDay(hour: 7, minute: 0),
@@ -87,6 +95,10 @@ class UserProfile {
     DateTime? updatedAt,
     NotificationSettings? notificationSettings,
     bool? isOnboardingCompleted,
+    int? sleepLiteracyScore,
+    DateTime? sleepLiteracyTestDate,
+    int? sleepLiteracyTestDurationMinutes,
+    Map<String, Map<String, int>>? sleepLiteracyCategoryScores,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -113,6 +125,10 @@ class UserProfile {
       updatedAt: updatedAt ?? DateTime.now(),
       notificationSettings: notificationSettings ?? this.notificationSettings,
       isOnboardingCompleted: isOnboardingCompleted ?? this.isOnboardingCompleted,
+      sleepLiteracyScore: sleepLiteracyScore ?? this.sleepLiteracyScore,
+      sleepLiteracyTestDate: sleepLiteracyTestDate ?? this.sleepLiteracyTestDate,
+      sleepLiteracyTestDurationMinutes: sleepLiteracyTestDurationMinutes ?? this.sleepLiteracyTestDurationMinutes,
+      sleepLiteracyCategoryScores: sleepLiteracyCategoryScores ?? this.sleepLiteracyCategoryScores,
     );
   }
 }

@@ -138,6 +138,55 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
+  // 睡眠リテラシーテストのスコアを更新
+  Future<void> updateSleepLiteracyScore(
+    int score,
+    int durationMinutes,
+    Map<String, Map<String, int>> categoryScores,
+  ) async {
+    if (_userProfile == null) return;
+
+    debugPrint('UserProvider: Updating sleep literacy score: $score/10');
+    
+    final updatedProfile = _userProfile!.copyWith(
+      sleepLiteracyScore: score,
+      sleepLiteracyTestDate: DateTime.now(),
+      sleepLiteracyTestDurationMinutes: durationMinutes,
+      sleepLiteracyCategoryScores: categoryScores,
+    );
+
+    await _userRepository.saveUserProfile(updatedProfile);
+    
+    // Analytics: 睡眠リテラシーテスト完了イベントを送信
+    await AnalyticsService().logCustomEvent(
+      'sleep_literacy_score_saved',
+      parameters: {
+        'score': score,
+        'duration_minutes': durationMinutes,
+        'test_date': DateTime.now().millisecondsSinceEpoch,
+        'category_scores': categoryScores,
+      },
+    );
+    
+    _userProfile = updatedProfile;
+    notifyListeners();
+    debugPrint('UserProvider: Sleep literacy score updated and saved');
+  }
+
+  // 睡眠リテラシーレベルを取得
+  String getSleepLiteracyLevel() {
+    final score = _userProfile?.sleepLiteracyScore;
+    if (score == null) return '未測定';
+    
+    if (score >= 8) return '上級';
+    if (score >= 6) return '中級';
+    if (score >= 4) return '初級';
+    return '基礎';
+  }
+
+  // 睡眠リテラシーテストを受けたかどうか
+  bool get hasTakenSleepLiteracyTest => _userProfile?.sleepLiteracyScore != null;
+
   Future<void> updateProfile(UserProfile profile) async {
     debugPrint('UserProvider: Saving profile with ID: ${profile.id}');
     debugPrint('UserProvider: isOnboardingCompleted: ${profile.isOnboardingCompleted}');
