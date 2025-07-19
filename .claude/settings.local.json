@@ -32,7 +32,9 @@
       "Bash(echo $PATH)",
       "Bash(grep:*)",
       "Bash(rbenv versions:*)",
-      "Bash(brew install:*)"
+      "Bash(brew install:*)",
+      "Bash(pod update:*)",
+      "Bash(pod repo update:*)"
     ],
     "deny": []
   }
