@@ -73,7 +73,7 @@ class SleepApp extends StatelessWidget {
         title: 'Sleep Tracker',
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
+        themeMode: ThemeMode.light,
         home: const SplashScreen(),
         debugShowCheckedModeBanner: false,
         navigatorObservers: [
