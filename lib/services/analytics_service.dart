@@ -325,6 +325,69 @@ class AnalyticsService {
     }
   }
 
+  // 睡眠リテラシーテスト関連イベント
+  Future<void> logSleepLiteracyTestStarted() async {
+    await _logEvent('sleep_literacy_test_started', parameters: {
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+  }
+
+  Future<void> logSleepLiteracyTestCompleted({
+    required int score,
+    required int totalQuestions,
+    required int durationMinutes,
+    required int unknownAnswersCount,
+    Map<String, dynamic>? categoryScores,
+  }) async {
+    await _logEvent('sleep_literacy_test_completed', parameters: {
+      'score': score,
+      'total_questions': totalQuestions,
+      'correct_percentage': (score / totalQuestions * 100).round(),
+      'duration_minutes': durationMinutes,
+      'unknown_answers_count': unknownAnswersCount,
+      'completion_timestamp': DateTime.now().millisecondsSinceEpoch,
+      if (categoryScores != null) 'category_scores': categoryScores,
+    });
+  }
+
+  Future<void> logSleepLiteracyQuestionAnswered({
+    required int questionId,
+    required String questionCategory,
+    required int selectedAnswer,
+    required bool isCorrect,
+    required bool isUnknown,
+    required int questionIndex,
+  }) async {
+    await _logEvent('sleep_literacy_question_answered', parameters: {
+      'question_id': questionId,
+      'question_category': questionCategory,
+      'selected_answer': selectedAnswer,
+      'is_correct': isCorrect,
+      'is_unknown': isUnknown,
+      'question_index': questionIndex,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+  }
+
+  Future<void> logSleepLiteracyTestSkipped() async {
+    await _logEvent('sleep_literacy_test_skipped', parameters: {
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+  }
+
+  Future<void> logSleepLiteracyScoreSaved({
+    required int score,
+    required int durationMinutes,
+    Map<String, dynamic>? categoryScores,
+  }) async {
+    await _logEvent('sleep_literacy_score_saved', parameters: {
+      'score': score,
+      'duration_minutes': durationMinutes,
+      'save_timestamp': DateTime.now().millisecondsSinceEpoch,
+      if (categoryScores != null) 'category_scores': categoryScores,
+    });
+  }
+
   // アプリの初回起動イベント
   Future<void> logFirstOpen() async {
     if (!_initialized || _analytics == null) {
