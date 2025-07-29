@@ -21,10 +21,10 @@ def flutterVersionName = localProperties.getProperty('flutter.versionName')
 if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
-// apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.gms.google-services'
 
 android {
-    namespace 'com.arai.sleep.dev'
+    namespace 'com.arai.sleep'
     compileSdkVersion 35
     ndkVersion flutter.ndkVersion
 
@@ -44,7 +44,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.arai.sleep.dev"
+        applicationId "com.arai.sleep"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion 26
@@ -52,6 +52,19 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
+    }
+
+    flavorDimensions "environment"
+    productFlavors {
+        dev {
+            dimension "environment"
+            applicationIdSuffix ".dev"
+            resValue "string", "app_name", "Sleep Dev"
+        }
+        prod {
+            dimension "environment"
+            resValue "string", "app_name", "Sleep"
+        }
     }
 
     buildTypes {

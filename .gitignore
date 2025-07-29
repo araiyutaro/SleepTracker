@@ -64,8 +64,10 @@ functions-debug.log
 !.claude/settings.local.json
 google-services.json
 android/app/google-services.json
+android/app/src/*/google-services.json
 GoogleService-Info.plist
 ios/Runner/GoogleService-Info.plist
+ios/Runner/Firebase/*/GoogleService-Info.plist
 
 # iOS build
 ios/build/

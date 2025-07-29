@@ -48,6 +48,12 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	
+	<!-- プッシュ通知のバックグラウンドモード -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+	
 	<!-- HealthKit権限設定 -->
 	<key>NSHealthShareUsageDescription</key>
 	<string>このアプリは睡眠データ、心拍数、歩数、消費カロリーを分析し、より良い睡眠習慣をサポートするためにHealthKitデータにアクセスします。</string>

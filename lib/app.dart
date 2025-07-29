@@ -19,9 +19,12 @@ import 'presentation/screens/sleep_literacy_test_intro_screen.dart';
 import 'presentation/screens/sleep_literacy_test_screen.dart';
 import 'presentation/screens/sleep_literacy_test_result_screen.dart';
 import 'presentation/screens/main_screen.dart';
+import 'config/flavor_config.dart';
 
 class SleepApp extends StatelessWidget {
   const SleepApp({Key? key}) : super(key: key);
+  
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   Widget build(BuildContext context) {
@@ -78,12 +81,13 @@ class SleepApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'Sleep Tracker',
+        title: FlavorConfig.appTitle,
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.light,
         home: const SplashScreen(),
         debugShowCheckedModeBanner: false,
+        navigatorKey: navigatorKey,
         navigatorObservers: [
           if (AnalyticsService().observer != null) AnalyticsService().observer!,
         ],
