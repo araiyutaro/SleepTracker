@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:uuid/uuid.dart';
 import '../domain/entities/sleep_session.dart';
 import '../domain/repositories/sleep_repository.dart';
+import '../config/flavor_config.dart';
 
 class DummyDataGenerator {
   final SleepRepository _sleepRepository;
@@ -12,6 +13,12 @@ class DummyDataGenerator {
       : _sleepRepository = sleepRepository;
 
   Future<void> generateDummySleepData() async {
+    // Dev環境でのみ動作
+    if (!FlavorConfig.isDev) {
+      print('ダミーデータ生成はDev環境でのみ利用可能です');
+      return;
+    }
+    
     print('ダミー睡眠データの生成を開始...');
     
     // 既存のセッションを取得して重複チェック用に日付を抽出

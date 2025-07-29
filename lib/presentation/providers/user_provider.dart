@@ -79,15 +79,6 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addPoints(int points) async {
-    await _userRepository.updatePoints(points);
-    await _loadUserProfile();
-  }
-
-  Future<void> unlockAchievement(String achievementId) async {
-    await _userRepository.unlockAchievement(achievementId);
-    await _loadUserProfile();
-  }
 
   Future<bool> requestNotificationPermissions() async {
     return await _notificationService.requestPermissions();
@@ -115,6 +106,21 @@ class UserProvider extends ChangeNotifier {
 
       if (settings.weeklyReportEnabled) {
         await _notificationService.scheduleWeeklyReport();
+      }
+
+      // プッシュ通知のトピックに購読
+      await _notificationService.subscribeToSleepNotifications();
+      
+      // FCMトークンをログ出力（デバッグ用）
+      final fcmToken = _notificationService.fcmToken;
+      if (fcmToken != null) {
+        debugPrint('UserProvider: FCM Token available (length: ${fcmToken.length})');
+        print('✅ Push notifications are ready to receive messages');
+        print('📋 Use this token to send test messages:');
+        print('$fcmToken');
+      } else {
+        debugPrint('UserProvider: FCM Token not available - check Firebase setup');
+        print('❌ FCM Token not available - Firebase setup required');
       }
     } catch (e) {
       debugPrint('Failed to schedule notifications: $e');

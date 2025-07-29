@@ -13,21 +13,33 @@ class FirebaseService {
   static const String _functionsBaseUrl = 'https://us-central1-sleep-tracker-app-1751975391.cloudfunctions.net';
 
   static bool _initialized = false;
+  
+  /// Firebaseが初期化されているかどうか
+  static bool get isInitialized => _initialized;
 
   /// Firebase初期化
   static Future<void> initialize() async {
     if (_initialized) return;
     
     try {
+      print('Checking for Firebase config files...');
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
       
       print('Firebase初期化完了');
-      
       _initialized = true;
+      print('✅ Firebase initialization successful');
     } catch (e) {
       print('Firebase初期化エラー: $e');
+      print('❌ Firebase initialization failed');
+      print('Common causes:');
+      print('  1. Missing config files:');
+      print('     - android/app/google-services.json');
+      print('     - ios/Runner/GoogleService-Info.plist');
+      print('  2. Incorrect package name/bundle ID');
+      print('  3. firebase_options.dart not generated');
+      print('Run: flutterfire configure');
       rethrow;
     }
   }

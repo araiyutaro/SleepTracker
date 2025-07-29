@@ -71,8 +71,6 @@ class DatabaseService {
           exercise_habit TEXT,
           phone_usage_time TEXT,
           phone_usage_content_json TEXT,
-          points INTEGER NOT NULL DEFAULT 0,
-          achievements_json TEXT,
           created_at INTEGER NOT NULL,
           updated_at INTEGER NOT NULL,
           notification_settings_json TEXT,

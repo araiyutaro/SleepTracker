@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
+import 'push_notification_service.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -9,10 +10,14 @@ class NotificationService {
   NotificationService._internal();
 
   final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+  final PushNotificationService _pushNotificationService = PushNotificationService();
   bool _isInitialized = false;
 
   // アラームサービスから使用するためのgetter
   FlutterLocalNotificationsPlugin get flutterLocalNotificationsPlugin => _notifications;
+  
+  // プッシュ通知サービスへのアクセス
+  PushNotificationService get pushNotificationService => _pushNotificationService;
 
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -36,6 +41,14 @@ class NotificationService {
       onDidReceiveNotificationResponse: _onNotificationTapped,
     );
 
+    // プッシュ通知サービスも初期化（エラーをキャッチ）
+    try {
+      await _pushNotificationService.initialize();
+    } catch (e) {
+      debugPrint('NotificationService: Failed to initialize push notifications: $e');
+      // プッシュ通知の初期化に失敗してもローカル通知は使用可能
+    }
+
     _isInitialized = true;
   }
 
@@ -52,21 +65,24 @@ class NotificationService {
     final ios = _notifications.resolvePlatformSpecificImplementation<
         IOSFlutterLocalNotificationsPlugin>();
 
-    bool granted = true;
+    bool localGranted = true;
 
     if (android != null) {
-      granted = await android.requestNotificationsPermission() ?? false;
+      localGranted = await android.requestNotificationsPermission() ?? false;
     }
 
     if (ios != null) {
-      granted = await ios.requestPermissions(
+      localGranted = await ios.requestPermissions(
         alert: true,
         badge: true,
         sound: true,
       ) ?? false;
     }
 
-    return granted;
+    // プッシュ通知の権限もリクエスト
+    bool pushGranted = await _pushNotificationService.requestPermissions();
+
+    return localGranted && pushGranted;
   }
 
   Future<void> scheduleBedtimeReminder({
@@ -261,5 +277,57 @@ class NotificationService {
 
   Future<List<PendingNotificationRequest>> getPendingNotifications() async {
     return await _notifications.pendingNotificationRequests();
+  }
+
+  // プッシュ通知関連のメソッド
+
+  /// FCMトークンを取得
+  String? get fcmToken => _pushNotificationService.fcmToken;
+
+  /// 睡眠関連のトピックに購読
+  Future<void> subscribeToSleepNotifications() async {
+    await _pushNotificationService.subscribeToTopic('sleep_reminders');
+    await _pushNotificationService.subscribeToTopic('sleep_tips');
+    await _pushNotificationService.subscribeToTopic('weekly_reports');
+  }
+
+  /// 睡眠関連のトピックから購読解除
+  Future<void> unsubscribeFromSleepNotifications() async {
+    await _pushNotificationService.unsubscribeFromTopic('sleep_reminders');
+    await _pushNotificationService.unsubscribeFromTopic('sleep_tips');
+    await _pushNotificationService.unsubscribeFromTopic('weekly_reports');
+  }
+
+  /// 特定のトピックに購読
+  Future<void> subscribeToTopic(String topic) async {
+    await _pushNotificationService.subscribeToTopic(topic);
+  }
+
+  /// 特定のトピックから購読解除
+  Future<void> unsubscribeFromTopic(String topic) async {
+    await _pushNotificationService.unsubscribeFromTopic(topic);
+  }
+
+  /// テスト用プッシュ通知を送信
+  Future<void> sendTestPushNotification() async {
+    if (!_pushNotificationService.isInitialized) {
+      throw Exception('プッシュ通知サービスが初期化されていません。Firebase設定が必要です。');
+    }
+    
+    await _pushNotificationService.sendTestNotification();
+  }
+
+  /// プッシュ通知の権限状態を確認
+  Future<bool> isPushNotificationEnabled() async {
+    try {
+      if (!_pushNotificationService.isInitialized) {
+        return false;
+      }
+      final status = await _pushNotificationService.getPermissionStatus();
+      return status.toString().contains('authorized');
+    } catch (e) {
+      debugPrint('Failed to check push notification permission: $e');
+      return false;
+    }
   }
 }
