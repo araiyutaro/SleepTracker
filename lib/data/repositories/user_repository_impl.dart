@@ -37,37 +37,4 @@ class UserRepositoryImpl implements UserRepository {
     debugPrint('UserRepository: Profile saved to local data source');
   }
 
-  @override
-  Future<void> updatePoints(int points) async {
-    final profile = await getUserProfile();
-    if (profile != null) {
-      final updatedProfile = profile.copyWith(
-        points: profile.points + points,
-      );
-      await saveUserProfile(updatedProfile);
-    }
-  }
-
-  @override
-  Future<void> unlockAchievement(String achievementId) async {
-    final profile = await getUserProfile();
-    if (profile != null) {
-      final achievementIndex = profile.achievements.indexWhere(
-        (a) => a.id == achievementId,
-      );
-      
-      if (achievementIndex != -1 && !profile.achievements[achievementIndex].isUnlocked) {
-        final updatedAchievements = List<Achievement>.from(profile.achievements);
-        updatedAchievements[achievementIndex] = 
-            updatedAchievements[achievementIndex].unlock();
-        
-        final updatedProfile = profile.copyWith(
-          achievements: updatedAchievements,
-          points: profile.points + updatedAchievements[achievementIndex].points,
-        );
-        
-        await saveUserProfile(updatedProfile);
-      }
-    }
-  }
 }

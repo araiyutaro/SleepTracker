@@ -20,8 +20,6 @@ class UserProfileModel {
   final String? exerciseHabit;
   final String? phoneUsageTime;
   final String? phoneUsageContentJson;
-  final int points;
-  final String? achievementsJson;
   final int createdAtEpoch;
   final int updatedAtEpoch;
   final String? notificationSettingsJson;
@@ -46,8 +44,6 @@ class UserProfileModel {
     this.exerciseHabit,
     this.phoneUsageTime,
     this.phoneUsageContentJson,
-    required this.points,
-    this.achievementsJson,
     required this.createdAtEpoch,
     required this.updatedAtEpoch,
     this.notificationSettingsJson,
@@ -74,8 +70,6 @@ class UserProfileModel {
       exerciseHabit: entity.exerciseHabit,
       phoneUsageTime: entity.phoneUsageTime,
       phoneUsageContentJson: entity.phoneUsageContent.isEmpty ? null : entity.phoneUsageContent.join(','),
-      points: entity.points,
-      achievementsJson: _achievementsToJson(entity.achievements),
       createdAtEpoch: entity.createdAt.millisecondsSinceEpoch,
       updatedAtEpoch: entity.updatedAt.millisecondsSinceEpoch,
       notificationSettingsJson: _notificationSettingsToJson(entity.notificationSettings),
@@ -103,8 +97,6 @@ class UserProfileModel {
       exerciseHabit: exerciseHabit,
       phoneUsageTime: phoneUsageTime,
       phoneUsageContent: phoneUsageContentJson?.split(',') ?? [],
-      points: points,
-      achievements: _achievementsFromJson(achievementsJson),
       createdAt: DateTime.fromMillisecondsSinceEpoch(createdAtEpoch),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(updatedAtEpoch),
       notificationSettings: _notificationSettingsFromJson(notificationSettingsJson),
@@ -132,8 +124,6 @@ class UserProfileModel {
       'exercise_habit': exerciseHabit,
       'phone_usage_time': phoneUsageTime,
       'phone_usage_content_json': phoneUsageContentJson,
-      'points': points,
-      'achievements_json': achievementsJson,
       'created_at': createdAtEpoch,
       'updated_at': updatedAtEpoch,
       'notification_settings_json': notificationSettingsJson,
@@ -161,8 +151,6 @@ class UserProfileModel {
       exerciseHabit: map['exercise_habit'] as String?,
       phoneUsageTime: map['phone_usage_time'] as String?,
       phoneUsageContentJson: map['phone_usage_content_json'] as String?,
-      points: map['points'] as int,
-      achievementsJson: map['achievements_json'] as String?,
       createdAtEpoch: map['created_at'] as int,
       updatedAtEpoch: map['updated_at'] as int,
       notificationSettingsJson: map['notification_settings_json'] as String?,
@@ -180,31 +168,6 @@ class UserProfileModel {
       hour: int.parse(parts[0]),
       minute: int.parse(parts[1]),
     );
-  }
-
-  static String? _achievementsToJson(List<Achievement> achievements) {
-    if (achievements.isEmpty) return null;
-    return achievements
-        .map((a) =>
-            '${a.id}|${a.name}|${a.description}|${a.iconPath}|${a.unlockedAt?.millisecondsSinceEpoch ?? 0}|${a.points}')
-        .join(';');
-  }
-
-  static List<Achievement> _achievementsFromJson(String? json) {
-    if (json == null || json.isEmpty) return [];
-    return json.split(';').map((item) {
-      final parts = item.split('|');
-      return Achievement(
-        id: parts[0],
-        name: parts[1],
-        description: parts[2],
-        iconPath: parts[3],
-        unlockedAt: parts[4] != '0'
-            ? DateTime.fromMillisecondsSinceEpoch(int.parse(parts[4]))
-            : null,
-        points: int.parse(parts[5]),
-      );
-    }).toList();
   }
 
   static String? _notificationSettingsToJson(NotificationSettings settings) {
