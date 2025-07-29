@@ -52,6 +52,7 @@ dependencies:
   # Firebase/GCP
   firebase_core: ^3.15.1
   firebase_analytics: ^11.5.2
+  firebase_messaging: ^15.1.9
   uuid: ^4.5.1
   http: ^1.4.0  # Firebase代替用HTTP クライアント
   
