@@ -45,7 +45,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyCDpJHXq3GyjG4cmP7PXKjdALpXed07gOE',
-    appId: '1:633993262558:web:demo',
+    appId: '1:633993262558:web:6b5ac538aabc962546994f',
     messagingSenderId: '633993262558',
     projectId: 'sleep-tracker-app-1751975391',
     authDomain: 'sleep-tracker-app-1751975391.firebaseapp.com',
@@ -54,7 +54,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyC74XehF-FTCZoMl-EW1x-KxzToBuFBxIE',
-    appId: '1:633993262558:android:demo',
+    appId: '1:633993262558:android:789deea2fcc4169446994f',
     messagingSenderId: '633993262558',
     projectId: 'sleep-tracker-app-1751975391',
     authDomain: 'sleep-tracker-app-1751975391.firebaseapp.com',
@@ -63,7 +63,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCDpJHXq3GyjG4cmP7PXKjdALpXed07gOE',
-    appId: '1:633993262558:ios:6b5ac538aabc962546994f',
+    appId: '1:633993262558:ios:1481d5ee488f6b7f46994f',
     messagingSenderId: '633993262558',
     projectId: 'sleep-tracker-app-1751975391',
     authDomain: 'sleep-tracker-app-1751975391.firebaseapp.com',
@@ -73,7 +73,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyCDpJHXq3GyjG4cmP7PXKjdALpXed07gOE',
-    appId: '1:633993262558:macos:demo',
+    appId: '1:633993262558:ios:1481d5ee488f6b7f46994f',
     messagingSenderId: '633993262558',
     projectId: 'sleep-tracker-app-1751975391',
     authDomain: 'sleep-tracker-app-1751975391.firebaseapp.com',
