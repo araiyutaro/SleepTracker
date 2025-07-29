@@ -5,8 +5,8 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/user_provider.dart';
 import '../providers/sleep_provider.dart';
-import '../widgets/achievement_card.dart';
 import 'notification_settings_screen.dart';
+import 'push_notification_settings_screen.dart';
 import 'alarm_settings_screen.dart';
 import '../../core/themes/app_theme.dart';
 import '../../domain/entities/user_profile.dart';
@@ -39,6 +39,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) => const NotificationSettingsScreen(),
+                    ),
+                  );
+                  break;
+                case 'push_notifications':
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const PushNotificationSettingsScreen(),
                     ),
                   );
                   break;
@@ -77,6 +84,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: ListTile(
                   leading: Icon(Icons.notifications),
                   title: Text('通知設定'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'push_notifications',
+                child: ListTile(
+                  leading: Icon(Icons.phone_android),
+                  title: Text('プッシュ通知'),
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
@@ -138,11 +153,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 _buildProfileCard(profile),
                 const SizedBox(height: 16),
-                _buildPointsCard(profile),
+                _buildUserInfoCard(profile),
+                const SizedBox(height: 16),
+                _buildSleepLiteracyCard(profile),
                 const SizedBox(height: 16),
                 _buildHealthIntegrationCard(),
-                const SizedBox(height: 24),
-                _buildAchievementsSection(profile),
               ],
             ),
           );
@@ -174,15 +189,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'スリープマスター',
+              profile.nickname ?? 'ユーザー',
               style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'レベル ${_calculateLevel(profile.points)}',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppTheme.primaryColor,
-                  ),
             ),
           ],
         ),
@@ -190,13 +198,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildPointsCard(UserProfile profile) {
-    final currentLevel = _calculateLevel(profile.points);
-    final currentLevelPoints = _getPointsForLevel(currentLevel);
-    final nextLevelPoints = _getPointsForLevel(currentLevel + 1);
-    final progress = (profile.points - currentLevelPoints) /
-        (nextLevelPoints - currentLevelPoints);
-
+  Widget _buildUserInfoCard(UserProfile profile) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -204,50 +206,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                Icon(Icons.person_outline, color: AppTheme.primaryColor),
+                const SizedBox(width: 8),
                 Text(
-                  'ポイント',
-                  style: Theme.of(context).textTheme.titleLarge,
+                  'ユーザー情報',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                Text(
-                  '${profile.points} pt',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: AppTheme.accentColor,
-                        fontWeight: FontWeight.bold,
-                      ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.edit, size: 20),
+                  onPressed: () => _showEditProfileDialog(profile),
+                  tooltip: '編集',
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'レベル $currentLevel',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                    Text(
-                      'レベル ${currentLevel + 1}',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                LinearProgressIndicator(
-                  value: progress,
-                  backgroundColor: Colors.grey[200],
-                  valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '次のレベルまで ${nextLevelPoints - profile.points} ポイント',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
+            _buildInfoRow(
+              Icons.cake_outlined,
+              '年齢層',
+              profile.ageGroup ?? '未設定',
+            ),
+            const SizedBox(height: 8),
+            _buildInfoRow(
+              Icons.person_outline,
+              '性別',
+              profile.gender ?? '未設定',
+            ),
+            const SizedBox(height: 8),
+            _buildInfoRow(
+              Icons.work_outline,
+              '職業',
+              profile.occupation ?? '未設定',
+            ),
+            const SizedBox(height: 8),
+            _buildInfoRow(
+              Icons.access_time,
+              '目標睡眠時間',
+              '${profile.targetSleepHours.toStringAsFixed(1)}時間',
+            ),
+            const SizedBox(height: 8),
+            _buildInfoRow(
+              Icons.bedtime,
+              '目標就寝時刻',
+              profile.targetBedtime.format(context),
+            ),
+            const SizedBox(height: 8),
+            _buildInfoRow(
+              Icons.wb_sunny,
+              '目標起床時刻',
+              profile.targetWakeTime.format(context),
             ),
           ],
         ),
@@ -255,94 +265,213 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildAchievementsSection(UserProfile profile) {
-    final achievements = _getDefaultAchievements();
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
       children: [
-        Text(
-          'アチーブメント',
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-        const SizedBox(height: 16),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 1.5,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
+        Icon(icon, size: 18, color: Colors.grey[600]),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 100,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 14,
+            ),
           ),
-          itemCount: achievements.length,
-          itemBuilder: (context, index) {
-            final achievement = achievements[index];
-            final isUnlocked = profile.achievements.any((a) => a.id == achievement.id && a.isUnlocked);
-            return AchievementCard(
-              achievement: achievement,
-              isUnlocked: isUnlocked,
-            );
-          },
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
+            ),
+          ),
         ),
       ],
     );
   }
 
-  List<Achievement> _getDefaultAchievements() {
-    return [
-      Achievement(
-        id: 'first_sleep',
-        name: '初めての記録',
-        description: '初めて睡眠を記録',
-        iconPath: 'assets/achievements/first_sleep.png',
-        points: 50,
+  Widget _buildSleepLiteracyCard(UserProfile profile) {
+    final userProvider = context.read<UserProvider>();
+    final hasTest = userProvider.hasTakenSleepLiteracyTest;
+    final level = userProvider.getSleepLiteracyLevel();
+    
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.psychology, color: AppTheme.primaryColor),
+                const SizedBox(width: 8),
+                Text(
+                  '睡眠リテラシー',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (hasTest) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'スコア',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        '${profile.sleepLiteracyScore}/10',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'レベル',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _getLevelColor(level).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: _getLevelColor(level).withOpacity(0.3),
+                          ),
+                        ),
+                        child: Text(
+                          level,
+                          style: TextStyle(
+                            color: _getLevelColor(level),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (profile.sleepLiteracyTestDate != null)
+                Text(
+                  '実施日: ${DateFormat('yyyy年MM月dd日').format(profile.sleepLiteracyTestDate!)}',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                  ),
+                ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _showLiteracyTestDetails(profile),
+                  icon: const Icon(Icons.visibility),
+                  label: const Text('詳細結果を見る'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.primaryColor,
+                    side: BorderSide(color: AppTheme.primaryColor),
+                  ),
+                ),
+              ),
+            ] else ...[
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.quiz, color: Colors.blue[700]),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '睡眠リテラシーテストを受けてみませんか？',
+                            style: TextStyle(
+                              color: Colors.blue[700],
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '睡眠に関する知識レベルを測定して、より効果的な睡眠改善を目指しましょう。',
+                      style: TextStyle(
+                        color: Colors.blue[600],
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pushNamed('/sleep-literacy-test-intro');
+                  },
+                  icon: const Icon(Icons.play_arrow),
+                  label: const Text('テストを受ける'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryColor,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
-      Achievement(
-        id: 'week_streak',
-        name: '週間マスター',
-        description: '7日連続で記録',
-        iconPath: 'assets/achievements/week_streak.png',
-        points: 100,
-      ),
-      Achievement(
-        id: 'early_bird',
-        name: '早起き鳥',
-        description: '5回6時前に起床',
-        iconPath: 'assets/achievements/early_bird.png',
-        points: 75,
-      ),
-      Achievement(
-        id: 'perfect_sleep',
-        name: '完璧な睡眠',
-        description: '8時間睡眠を達成',
-        iconPath: 'assets/achievements/perfect_sleep.png',
-        points: 80,
-      ),
-      Achievement(
-        id: 'month_streak',
-        name: '月間マスター',
-        description: '30日連続で記録',
-        iconPath: 'assets/achievements/month_streak.png',
-        points: 200,
-      ),
-      Achievement(
-        id: 'sleep_quality',
-        name: '高品質睡眠',
-        description: '品質90%以上を5回達成',
-        iconPath: 'assets/achievements/sleep_quality.png',
-        points: 150,
-      ),
-    ];
+    );
   }
 
-  int _calculateLevel(int points) {
-    return (points ~/ 500) + 1;
+  Color _getLevelColor(String level) {
+    switch (level) {
+      case '上級':
+        return Colors.green;
+      case '中級':
+        return Colors.blue;
+      case '初級':
+        return Colors.orange;
+      case '基礎':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
   }
 
-  int _getPointsForLevel(int level) {
-    return (level - 1) * 500;
-  }
+
+
 
   Widget _buildHealthIntegrationCard() {
     return Card(
@@ -1107,6 +1236,329 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       }
     }
+  }
+
+  void _showEditProfileDialog(UserProfile profile) {
+    String nickname = profile.nickname ?? '';
+    String ageGroup = profile.ageGroup ?? '';
+    String gender = profile.gender ?? '';
+    String occupation = profile.occupation ?? '';
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('プロフィール編集'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      initialValue: nickname,
+                      decoration: const InputDecoration(
+                        labelText: 'ニックネーム',
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (value) => nickname = value,
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: ageGroup.isNotEmpty ? ageGroup : null,
+                      decoration: const InputDecoration(
+                        labelText: '年齢層',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: '10代', child: Text('10代')),
+                        DropdownMenuItem(value: '20代', child: Text('20代')),
+                        DropdownMenuItem(value: '30代', child: Text('30代')),
+                        DropdownMenuItem(value: '40代', child: Text('40代')),
+                        DropdownMenuItem(value: '50代', child: Text('50代')),
+                        DropdownMenuItem(value: '60代以上', child: Text('60代以上')),
+                      ],
+                      onChanged: (value) => setState(() => ageGroup = value ?? ''),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: gender.isNotEmpty ? gender : null,
+                      decoration: const InputDecoration(
+                        labelText: '性別',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: '男性', child: Text('男性')),
+                        DropdownMenuItem(value: '女性', child: Text('女性')),
+                        DropdownMenuItem(value: 'その他', child: Text('その他')),
+                        DropdownMenuItem(value: '答えたくない', child: Text('答えたくない')),
+                      ],
+                      onChanged: (value) => setState(() => gender = value ?? ''),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      initialValue: occupation,
+                      decoration: const InputDecoration(
+                        labelText: '職業',
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (value) => occupation = value,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('キャンセル'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    final userProvider = context.read<UserProvider>();
+                    final updatedProfile = profile.copyWith(
+                      nickname: nickname.isNotEmpty ? nickname : null,
+                      ageGroup: ageGroup.isNotEmpty ? ageGroup : null,
+                      gender: gender.isNotEmpty ? gender : null,
+                      occupation: occupation.isNotEmpty ? occupation : null,
+                    );
+                    userProvider.updateProfile(updatedProfile);
+                    Navigator.of(context).pop();
+                    
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('プロフィールを更新しました'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  },
+                  child: const Text('保存'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showLiteracyTestDetails(UserProfile profile) {
+    if (profile.sleepLiteracyScore == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          maxChildSize: 0.9,
+          minChildSize: 0.5,
+          expand: false,
+          builder: (context, scrollController) {
+            return Container(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ハンドル
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // タイトル
+                  Text(
+                    '睡眠リテラシーテスト結果',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // スコア表示
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [AppTheme.primaryColor, AppTheme.secondaryColor],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'スコア',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                            Text(
+                              '${profile.sleepLiteracyScore}/10',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const Text(
+                              'レベル',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                            Text(
+                              context.read<UserProvider>().getSleepLiteracyLevel(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // 詳細情報
+                  Expanded(
+                    child: ListView(
+                      controller: scrollController,
+                      children: [
+                        if (profile.sleepLiteracyTestDate != null) ...[
+                          _buildDetailRow(
+                            '実施日',
+                            DateFormat('yyyy年MM月dd日').format(profile.sleepLiteracyTestDate!),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                        if (profile.sleepLiteracyTestDurationMinutes != null) ...[
+                          _buildDetailRow(
+                            '所要時間',
+                            '${profile.sleepLiteracyTestDurationMinutes}分',
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                        _buildDetailRow(
+                          '正答率',
+                          '${(profile.sleepLiteracyScore! / 10 * 100).round()}%',
+                        ),
+                        
+                        const SizedBox(height: 24),
+                        
+                        // カテゴリー別結果
+                        if (profile.sleepLiteracyCategoryScores != null) ...[
+                          Text(
+                            'カテゴリー別結果',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          
+                          ...profile.sleepLiteracyCategoryScores!.entries.map((entry) {
+                            final category = entry.key;
+                            final scores = entry.value;
+                            final correct = scores['correct'] ?? 0;
+                            final total = scores['total'] ?? 0;
+                            final percentage = total > 0 ? (correct / total * 100).round() : 0;
+                            
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF8F9FA),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: const Color(0xFFE9ECEF)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    category,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        '$correct/$total問正解',
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                      Text(
+                                        '$percentage%',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: percentage >= 70
+                                              ? Colors.green
+                                              : percentage >= 50
+                                                  ? Colors.orange
+                                                  : Colors.red,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ],
+                        
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 14,
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+        ),
+      ],
+    );
   }
 
   String _encodeQueryParameters(Map<String, String> params) {

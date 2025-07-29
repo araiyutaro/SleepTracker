@@ -211,8 +211,6 @@ class _OnboardingWelcomeScreenState extends State<OnboardingWelcomeScreen> {
         exerciseHabit: '週3-4回',
         phoneUsageTime: '1-2時間',
         phoneUsageContent: ['SNS', '動画視聴'],
-        points: 100,
-        achievements: [],
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         notificationSettings: NotificationSettings(
