@@ -7,14 +7,19 @@ import '../../core/themes/app_theme.dart';
 import '../../services/analytics_service.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({Key? key}) : super(key: key);
+  final int initialIndex;
+  
+  const MainScreen({
+    Key? key,
+    this.initialIndex = 0,
+  }) : super(key: key);
 
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 0;
+  late int _currentIndex;
   
   final List<Widget> _screens = const [
     HomeScreen(),
@@ -33,6 +38,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialIndex;
     // Analytics: アプリ開始イベント
     AnalyticsService().logAppOpened();
   }

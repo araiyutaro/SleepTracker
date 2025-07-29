@@ -165,6 +165,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: "history_screen_fab",
         onPressed: () => _showManualEntryDialog(),
         tooltip: '睡眠記録を追加',
         child: const Icon(Icons.add),

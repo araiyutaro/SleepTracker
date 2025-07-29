@@ -101,6 +101,7 @@ class HomeScreen extends StatelessWidget {
       floatingActionButton: Consumer<SleepProvider>(
         builder: (context, sleepProvider, child) {
           return FloatingActionButton(
+            heroTag: "home_screen_fab",
             onPressed: () {
               AnalyticsService().logButtonTapped('manual_sleep_fab');
               _showManualSleepEntryDialog(context, sleepProvider);
