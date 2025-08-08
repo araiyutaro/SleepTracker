@@ -1,4 +1,4 @@
-package com.arai.sleep.dev
+package dev.arai.sleeptracker
 
 import io.flutter.embedding.android.FlutterActivity
 
