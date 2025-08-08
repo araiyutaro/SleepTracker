@@ -296,7 +296,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildSleepLiteracyCard(UserProfile profile) {
     final userProvider = context.read<UserProvider>();
     final hasTest = userProvider.hasTakenSleepLiteracyTest;
-    final level = userProvider.getSleepLiteracyLevel();
     
     return Card(
       child: Padding(
@@ -319,10 +318,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 16),
             if (hasTest) ...[
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
                         'スコア',
@@ -336,39 +335,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           color: AppTheme.primaryColor,
                           fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'レベル',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _getLevelColor(level).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: _getLevelColor(level).withOpacity(0.3),
-                          ),
-                        ),
-                        child: Text(
-                          level,
-                          style: TextStyle(
-                            color: _getLevelColor(level),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
                         ),
                       ),
                     ],
@@ -455,20 +421,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Color _getLevelColor(String level) {
-    switch (level) {
-      case '上級':
-        return Colors.green;
-      case '中級':
-        return Colors.blue;
-      case '初級':
-        return Colors.orange;
-      case '基礎':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
-  }
 
 
 
@@ -1395,42 +1347,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'スコア',
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                            Text(
-                              '${profile.sleepLiteracyScore}/10',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                        const Text(
+                          'スコア',
+                          style: TextStyle(color: Colors.white70),
                         ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            const Text(
-                              'レベル',
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                            Text(
-                              context.read<UserProvider>().getSleepLiteracyLevel(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                        Text(
+                          '${profile.sleepLiteracyScore}/10',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
