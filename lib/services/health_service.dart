@@ -36,9 +36,6 @@ class HealthService {
         HealthDataAccess.READ_WRITE,
         HealthDataAccess.READ_WRITE,
         HealthDataAccess.READ_WRITE,
-        HealthDataAccess.READ_WRITE,
-        HealthDataAccess.READ_WRITE,
-        HealthDataAccess.READ_WRITE,
       ];
 
       final types = [
@@ -48,9 +45,6 @@ class HealthService {
         HealthDataType.SLEEP_DEEP,
         HealthDataType.SLEEP_LIGHT,
         HealthDataType.SLEEP_REM,
-        HealthDataType.HEART_RATE,
-        HealthDataType.STEPS,
-        HealthDataType.ACTIVE_ENERGY_BURNED,
       ];
       
       debugPrint('HealthService: Requesting permissions for ${types.length} health data types');
@@ -105,9 +99,6 @@ class HealthService {
         HealthDataAccess.READ_WRITE,
         HealthDataAccess.READ_WRITE,
         HealthDataAccess.READ_WRITE,
-        HealthDataAccess.READ_WRITE,
-        HealthDataAccess.READ_WRITE,
-        HealthDataAccess.READ_WRITE,
       ];
 
       final types = [
@@ -117,9 +108,6 @@ class HealthService {
         HealthDataType.SLEEP_DEEP,
         HealthDataType.SLEEP_LIGHT,
         HealthDataType.SLEEP_REM,
-        HealthDataType.HEART_RATE,
-        HealthDataType.STEPS,
-        HealthDataType.ACTIVE_ENERGY_BURNED,
       ];
       
       debugPrint('HealthService: Checking permissions for ${types.length} health data types');
@@ -287,21 +275,15 @@ class HealthService {
   /// 今日のヘルスサマリーを取得
   Future<Map<String, dynamic>> getTodayHealthSummary() async {
     try {
-      // 基本的な空のデータを返す（実際の実装では各種データを取得）
+      // 基本的な空のデータを返す（睡眠データのみ）
       return {
         'sleepData': <HealthDataPoint>[],
-        'heartRateData': <HealthDataPoint>[],
-        'stepsData': <HealthDataPoint>[],
-        'caloriesData': <HealthDataPoint>[],
         'lastUpdated': DateTime.now(),
       };
     } catch (e) {
       debugPrint('HealthService: Failed to get today health summary: $e');
       return {
         'sleepData': <HealthDataPoint>[],
-        'heartRateData': <HealthDataPoint>[],
-        'stepsData': <HealthDataPoint>[],
-        'caloriesData': <HealthDataPoint>[],
         'lastUpdated': DateTime.now(),
       };
     }
