@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/sleep_literacy_test_provider.dart';
 import '../providers/user_provider.dart';
+import '../../services/firestore_service.dart';
+import '../../data/datasources/sleep_literacy_questions_data.dart';
 
 // 睡眠リテラシーテスト結果画面
 class SleepLiteracyTestResultScreen extends StatefulWidget {
@@ -56,6 +58,13 @@ class _SleepLiteracyTestResultScreenState extends State<SleepLiteracyTestResultS
         test.categoryScores,
       );
       
+      // Firestoreにもテスト結果を保存
+      try {
+        await FirestoreService().saveTestResult(test);
+      } catch (e) {
+        debugPrint('Failed to save test result to Firestore: $e');
+      }
+      
       _scoresSaved = true;
     }
   }
@@ -109,9 +118,9 @@ class _SleepLiteracyTestResultScreenState extends State<SleepLiteracyTestResultS
                   
                   // タイトル
                   const Text(
-                    'テスト完了！',
+                    'ご協力ありがとうございました',
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
@@ -129,13 +138,13 @@ class _SleepLiteracyTestResultScreenState extends State<SleepLiteracyTestResultS
                   
                   const SizedBox(height: 32),
                   
-                  // 評価メッセージ
-                  _buildEvaluationMessage(test.score),
-                  
-                  const SizedBox(height: 32),
-                  
                   // 詳細統計
                   _buildDetailedStats(test),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // 回答詳細
+                  _buildAnswerDetails(test),
                   
                   const SizedBox(height: 40),
                   
@@ -220,71 +229,6 @@ class _SleepLiteracyTestResultScreenState extends State<SleepLiteracyTestResultS
     );
   }
 
-  Widget _buildEvaluationMessage(int score) {
-    String title;
-    String message;
-    Color color;
-    IconData icon;
-
-    if (score >= 8) {
-      title = '優秀です！';
-      message = '睡眠に関する豊富な知識をお持ちですね。\nこのアプリでさらなる改善を目指しましょう。';
-      color = const Color(0xFF28A745);
-      icon = Icons.star;
-    } else if (score >= 6) {
-      title = '良い知識レベルです';
-      message = '基本的な睡眠知識をお持ちです。\nアプリを使って更なる向上を図りましょう。';
-      color = const Color(0xFF4A90E2);
-      icon = Icons.thumb_up;
-    } else if (score >= 4) {
-      title = '平均的なレベルです';
-      message = 'いくつかの睡眠知識を身につけています。\nアプリで新しい発見があるかもしれません。';
-      color = const Color(0xFFFF9800);
-      icon = Icons.lightbulb_outline;
-    } else {
-      title = '学習の機会です';
-      message = '睡眠についてより詳しく学ぶ絶好のチャンスです。\nアプリと一緒に睡眠改善を始めましょう。';
-      color = const Color(0xFF6C757D);
-      icon = Icons.school;
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: color, size: 24),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            message,
-            style: TextStyle(
-              fontSize: 15,
-              color: color.withOpacity(0.8),
-              height: 1.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildDetailedStats(dynamic test) {
     return Container(
@@ -314,6 +258,12 @@ class _SleepLiteracyTestResultScreenState extends State<SleepLiteracyTestResultS
           ),
           
           _buildStatRow(
+            Icons.check_circle,
+            '正解数',
+            '${test.score} / ${test.questions.length}',
+          ),
+          
+          _buildStatRow(
             Icons.help_outline,
             '「分からない」回答',
             '${test.unknownAnswersCount}問',
@@ -325,6 +275,187 @@ class _SleepLiteracyTestResultScreenState extends State<SleepLiteracyTestResultS
               '所要時間',
               '${test.durationMinutes}分',
             ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildAnswerDetails(dynamic test) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE9ECEF)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.list_alt,
+                size: 20,
+                color: Color(0xFF495057),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                '回答と正解',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF495057),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          
+          // 各問題の回答と正解を表示
+          ...test.questions.asMap().entries.map((entry) {
+            final index = entry.key;
+            final question = entry.value;
+            final userAnswer = test.userAnswers[index];
+            final isCorrect = userAnswer >= 0 && userAnswer == question.correctAnswer;
+            final isUnknown = userAnswer == 4; // 「分からない」は選択肢4番目（0-indexed）
+            final isUnanswered = userAnswer < 0; // 未回答の場合
+            
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isCorrect 
+                    ? const Color(0xFF28A745).withOpacity(0.05)
+                    : isUnknown
+                        ? const Color(0xFF6C757D).withOpacity(0.05)
+                        : isUnanswered
+                            ? const Color(0xFFFFC107).withOpacity(0.05)
+                            : const Color(0xFFDC3545).withOpacity(0.05),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isCorrect
+                      ? const Color(0xFF28A745).withOpacity(0.2)
+                      : isUnknown
+                          ? const Color(0xFF6C757D).withOpacity(0.2)
+                          : isUnanswered
+                              ? const Color(0xFFFFC107).withOpacity(0.2)
+                              : const Color(0xFFDC3545).withOpacity(0.2),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        isCorrect 
+                            ? Icons.check_circle 
+                            : isUnknown 
+                                ? Icons.help 
+                                : isUnanswered
+                                    ? Icons.warning
+                                    : Icons.cancel,
+                        size: 18,
+                        color: isCorrect 
+                            ? const Color(0xFF28A745)
+                            : isUnknown
+                                ? const Color(0xFF6C757D)
+                                : isUnanswered
+                                    ? const Color(0xFFFFC107)
+                                    : const Color(0xFFDC3545),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '問${index + 1}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF495057),
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        isCorrect 
+                            ? '正解' 
+                            : isUnknown 
+                                ? '分からない' 
+                                : isUnanswered
+                                    ? '未回答'
+                                    : '不正解',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: isCorrect 
+                              ? const Color(0xFF28A745)
+                              : isUnknown
+                                  ? const Color(0xFF6C757D)
+                                  : isUnanswered
+                                      ? const Color(0xFFFFC107)
+                                      : const Color(0xFFDC3545),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  
+                  // あなたの回答
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'あなたの回答: ',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF6C757D),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          isUnanswered 
+                              ? '未回答'
+                              : '(${SleepLiteracyQuestionsData.getOptionLabel(userAnswer)}) ${question.options[userAnswer]}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isUnanswered 
+                                ? const Color(0xFFFFC107)
+                                : const Color(0xFF495057),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  // 正解
+                  if (!isCorrect && !isUnanswered) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '正解: ',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF28A745),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            '(${SleepLiteracyQuestionsData.getOptionLabel(question.correctAnswer)}) ${question.options[question.correctAnswer]}',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF28A745),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            );
+          }).toList(),
         ],
       ),
     );

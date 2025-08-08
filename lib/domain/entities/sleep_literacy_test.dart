@@ -57,6 +57,16 @@ class SleepLiteracyTest {
     return answers.values.where((answer) => answer == 4).length; // 4は「分からない」
   }
 
+  // ユーザーの回答をリストとして取得（画面表示用）
+  List<int> get userAnswers {
+    final List<int> userAnswersList = [];
+    for (int i = 0; i < questions.length; i++) {
+      final questionId = questions[i].id;
+      userAnswersList.add(answers[questionId] ?? -1); // 未回答は-1
+    }
+    return userAnswersList;
+  }
+
   // テスト時間（分）
   int? get durationMinutes {
     if (endTime != null) {
