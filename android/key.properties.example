@@ -1,0 +1,14 @@
+# Android署名設定ファイルのテンプレート
+# このファイルをkey.propertiesという名前でコピーして使用してください
+# 注意: key.propertiesは.gitignoreに含まれており、Gitにコミットされません
+
+storePassword=<your-keystore-password>
+keyPassword=<your-key-password>
+keyAlias=upload
+storeFile=<path-to-your-keystore-file>
+
+# 例:
+# storePassword=myStorePassword123
+# keyPassword=myKeyPassword123
+# keyAlias=upload
+# storeFile=/Users/username/upload-keystore.jks
