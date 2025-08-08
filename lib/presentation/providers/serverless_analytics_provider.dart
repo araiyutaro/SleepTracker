@@ -29,7 +29,7 @@ class ServerlessAnalyticsProvider with ChangeNotifier {
       _isConnected = user != null;
       
       if (_isConnected) {
-        print('Firebase接続成功: ${user!.uid}');
+        print('Firebase接続成功: ${user!.user?.uid}');
       } else {
         _errorMessage = 'Firebase接続に失敗しました';
       }

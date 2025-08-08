@@ -3,6 +3,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'services/firebase_service.dart';
 import 'services/analytics_service.dart';
 import 'services/notification_service.dart';
+import 'services/firestore_service.dart';
 import 'app.dart';
 import 'config/flavor_config.dart';
 
@@ -30,7 +31,12 @@ Future<void> mainCommon() async {
       // Firebase初期化に成功した場合、AnalyticsServiceを再初期化
       AnalyticsService().initialize();
       print('✅ AnalyticsService: Firebase連携モードで再初期化完了');
-      print('🚀 Firebase services are ready - Push notifications will be available');
+      
+      // Firestore初期化
+      await FirestoreService().initialize();
+      print('✅ FirestoreService初期化完了');
+      
+      print('🚀 Firebase services are ready - Push notifications and cloud sync will be available');
     } catch (e) {
       print('⚠️ Firebase初期化エラー（オフラインモードで継続）: $e');
       // Firebase初期化に失敗した場合はスタブモードを維持

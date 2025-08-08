@@ -2,18 +2,29 @@ import '../../domain/entities/sleep_session.dart';
 import '../../domain/repositories/sleep_repository.dart';
 import '../datasources/local_data_source.dart';
 import '../models/sleep_record_model.dart';
+import '../../services/firestore_service.dart';
 
 class SleepRepositoryImpl implements SleepRepository {
   final LocalDataSource _localDataSource;
+  final FirestoreService _firestoreService;
 
   SleepRepositoryImpl({
     required LocalDataSource localDataSource,
-  }) : _localDataSource = localDataSource;
+  }) : _localDataSource = localDataSource,
+       _firestoreService = FirestoreService();
 
   @override
   Future<SleepSession> startSession(SleepSession session) async {
     final model = SleepRecordModel.fromEntity(session);
     await _localDataSource.insertSleepRecord(model);
+    
+    // Firestoreにも保存（エラーが発生してもローカル動作は継続）
+    try {
+      await _firestoreService.saveSleepSession(session);
+    } catch (e) {
+      // ログのみ出力、エラーは無視
+    }
+    
     return session;
   }
 
@@ -45,7 +56,16 @@ class SleepRepositoryImpl implements SleepRepository {
         );
 
         await _localDataSource.updateSleepRecord(updatedRecord);
-        return updatedRecord.toEntity();
+        final updatedSession = updatedRecord.toEntity();
+        
+        // Firestoreにも更新を保存
+        try {
+          await _firestoreService.saveSleepSession(updatedSession);
+        } catch (e) {
+          // ログのみ出力、エラーは無視
+        }
+        
+        return updatedSession;
       }
 
       final endTime = DateTime.now();
@@ -65,7 +85,16 @@ class SleepRepositoryImpl implements SleepRepository {
       );
 
       await _localDataSource.updateSleepRecord(updatedRecord);
-      return updatedRecord.toEntity();
+      final updatedSession = updatedRecord.toEntity();
+      
+      // Firestoreにも更新を保存
+      try {
+        await _firestoreService.saveSleepSession(updatedSession);
+      } catch (e) {
+        // ログのみ出力、エラーは無視
+      }
+      
+      return updatedSession;
     } catch (e) {
       throw Exception('Failed to end sleep session: $e');
     }
@@ -106,6 +135,13 @@ class SleepRepositoryImpl implements SleepRepository {
   Future<void> updateSession(SleepSession session) async {
     final model = SleepRecordModel.fromEntity(session);
     await _localDataSource.updateSleepRecord(model);
+    
+    // Firestoreにも更新を保存
+    try {
+      await _firestoreService.saveSleepSession(session);
+    } catch (e) {
+      // ログのみ出力、エラーは無視
+    }
   }
 
   double _calculateQualityScore(Duration duration) {
