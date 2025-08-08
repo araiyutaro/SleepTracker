@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../firebase_options.dart';
@@ -7,8 +8,14 @@ import 'analytics_service.dart';
 /// Firebase サービスクラス
 /// Google Cloud Platform との通信を担当
 class FirebaseService {
-  // static final FirebaseAuth _auth = FirebaseAuth.instance;  // iOS対応のため一時無効化
-  // static final FirebaseFirestore _firestore = FirebaseFirestore.instance;  // iOS対応のため一時無効化
+  static FirebaseAuth? _auth;
+  
+  static FirebaseAuth get auth {
+    if (_auth == null) {
+      throw Exception('Firebase not initialized. Call FirebaseService.initialize() first');
+    }
+    return _auth!;
+  }
   // Cloud Functions HTTPエンドポイント（iOS対応）
   static const String _functionsBaseUrl = 'https://us-central1-sleep-tracker-app-1751975391.cloudfunctions.net';
 
@@ -28,6 +35,11 @@ class FirebaseService {
       );
       
       print('Firebase初期化完了');
+      
+      // Firebase Authの初期化
+      _auth = FirebaseAuth.instance;
+      print('✅ Firebase Auth initialized');
+      
       _initialized = true;
       print('✅ Firebase initialization successful');
     } catch (e) {
@@ -44,37 +56,49 @@ class FirebaseService {
     }
   }
 
-  /// 匿名認証（iOS対応のため一時的にスタブ実装）
-  static Future<dynamic> signInAnonymously() async {
+  /// 匿名認証
+  static Future<UserCredential?> signInAnonymously() async {
     try {
-      // final userCredential = await _auth.signInAnonymously();  // iOS対応のため一時無効化
-      print('匿名認証スキップ（iOS対応モード）');
-      return null;
+      if (!_initialized) {
+        throw Exception('Firebase not initialized');
+      }
+      
+      final userCredential = await auth.signInAnonymously();
+      print('✅ 匿名認証成功: ${userCredential.user?.uid}');
+      return userCredential;
     } catch (e) {
-      print('匿名認証エラー: $e');
+      print('❌ 匿名認証エラー: $e');
       return null;
     }
   }
 
-  /// 現在のユーザーを取得（iOS対応のため一時的にスタブ実装）
-  static dynamic getCurrentUser() {
-    // return _auth.currentUser;  // iOS対応のため一時無効化
-    return null;
+  /// 現在のユーザーを取得
+  static User? getCurrentUser() {
+    if (!_initialized) {
+      return null;
+    }
+    return auth.currentUser;
   }
 
-  /// 認証状態を監視（iOS対応のため一時的にスタブ実装）
-  static Stream<dynamic> authStateChanges() {
-    // return _auth.authStateChanges();  // iOS対応のため一時無効化
-    return Stream.value(null);
+  /// 認証状態を監視
+  static Stream<User?> authStateChanges() {
+    if (!_initialized) {
+      return Stream.value(null);
+    }
+    return auth.authStateChanges();
   }
 
-  /// サインアウト（iOS対応のため一時的にスタブ実装）
+  /// サインアウト
   static Future<void> signOut() async {
     try {
-      // await _auth.signOut();  // iOS対応のため一時無効化
-      print('サインアウト完了（スタブ）');
+      if (!_initialized) {
+        return;
+      }
+      
+      await auth.signOut();
+      print('✅ サインアウト完了');
     } catch (e) {
-      print('サインアウトエラー: $e');
+      print('❌ サインアウトエラー: $e');
     }
   }
 

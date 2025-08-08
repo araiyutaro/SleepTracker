@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -380,30 +381,50 @@ class PushNotificationService {
   /// 特定のトピックに購読
   Future<void> subscribeToTopic(String topic) async {
     try {
+      // iOSでFCMトークンが無い場合はスキップ
+      if (Platform.isIOS && _fcmToken == null) {
+        debugPrint('⚠️ Skipping topic subscription - FCM token not available on iOS');
+        return;
+      }
+      
       await _firebaseMessaging.subscribeToTopic(topic);
-      debugPrint('Subscribed to topic: $topic');
+      debugPrint('✅ Subscribed to topic: $topic');
       
       // Analytics: トピック購読
       await AnalyticsService().logCustomEvent('push_notification_topic_subscribed', parameters: {
         'topic': topic,
       });
     } catch (e) {
-      debugPrint('Failed to subscribe to topic $topic: $e');
+      debugPrint('❌ Failed to subscribe to topic $topic: $e');
+      // APNSトークンエラーの場合は警告のみ
+      if (e.toString().contains('apns-token-not-set')) {
+        debugPrint('⚠️ This is expected when using a Personal Development Team');
+      }
     }
   }
 
   /// 特定のトピックから購読解除
   Future<void> unsubscribeFromTopic(String topic) async {
     try {
+      // iOSでFCMトークンが無い場合はスキップ
+      if (Platform.isIOS && _fcmToken == null) {
+        debugPrint('⚠️ Skipping topic unsubscription - FCM token not available on iOS');
+        return;
+      }
+      
       await _firebaseMessaging.unsubscribeFromTopic(topic);
-      debugPrint('Unsubscribed from topic: $topic');
+      debugPrint('✅ Unsubscribed from topic: $topic');
       
       // Analytics: トピック購読解除
       await AnalyticsService().logCustomEvent('push_notification_topic_unsubscribed', parameters: {
         'topic': topic,
       });
     } catch (e) {
-      debugPrint('Failed to unsubscribe from topic $topic: $e');
+      debugPrint('❌ Failed to unsubscribe from topic $topic: $e');
+      // APNSトークンエラーの場合は警告のみ
+      if (e.toString().contains('apns-token-not-set')) {
+        debugPrint('⚠️ This is expected when using a Personal Development Team');
+      }
     }
   }
 
