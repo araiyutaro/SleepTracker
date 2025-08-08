@@ -31,8 +31,21 @@ class _OnboardingSleepHabitsScreenState extends State<OnboardingSleepHabitsScree
   String? _caffeineHabit;
   String? _alcoholHabit;
   String? _exerciseHabit;
+  int? _sleepQualitySatisfaction; // 質問4: 睡眠の質の満足度 (1-5)
+  List<String> _selectedSleepProblems = []; // 質問5: 睡眠の悩み
 
-  // 睡眠の悩みの選択肢
+  // 睡眠の悩みの選択肢（質問5用）
+  final List<String> _sleepProblems = [
+    '寝つきが悪い',
+    '夜中に何度も目が覚める',
+    '朝早くに目が覚めて、その後眠れない',
+    '日中に強い眠気を感じる',
+    '朝、すっきりと起きられない',
+    '睡眠時間が足りていないと感じる',
+    '特に悩みはない',
+  ];
+
+  // 旧睡眠の悩みの選択肢（保持）
   final List<String> _sleepConcerns = [
     '寝つきが悪い',
     '夜中に目が覚める',
@@ -62,11 +75,12 @@ class _OnboardingSleepHabitsScreenState extends State<OnboardingSleepHabitsScree
   ];
 
   bool get _canProceed =>
+      _sleepQualitySatisfaction != null &&
+      _selectedSleepProblems.isNotEmpty &&
       _weekdayBedtime != null &&
       _weekdayWakeTime != null &&
       _weekendBedtime != null &&
-      _weekendWakeTime != null &&
-      _selectedConcerns.isNotEmpty;
+      _weekendWakeTime != null;
 
   @override
   Widget build(BuildContext context) {
@@ -93,18 +107,34 @@ class _OnboardingSleepHabitsScreenState extends State<OnboardingSleepHabitsScree
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '睡眠・生活習慣について',
+                    '② あなたの睡眠について（主観評価と悩み）',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'あなたの睡眠パターンを理解するために教えてください',
+                    '被験者が感じている「睡眠の質」や具体的な悩みを把握します。アプリで測定する客観データと、本人の主観的な悩みの関係性を分析できます。',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Colors.grey[600],
                     ),
                   ),
+                  const SizedBox(height: 24),
+
+                  // 質問4: 睡眠の質の満足度
+                  _buildSectionTitle('質問4. 現在、ご自身の睡眠の質に全体的にどのくらい満足していますか？', isRequired: true),
+                  const SizedBox(height: 8),
+                  _buildSatisfactionScale(),
+                  const SizedBox(height: 24),
+
+                  // 質問5: 睡眠の悩み
+                  _buildSectionTitle('質問5. あなたが感じている睡眠の悩みに、あてはまるものをすべて選んでください。（複数選択可）', isRequired: true),
+                  const SizedBox(height: 8),
+                  _buildMultiChoiceSection(_sleepProblems, _selectedSleepProblems, (problems) {
+                    setState(() {
+                      _selectedSleepProblems = problems;
+                    });
+                  }),
                   const SizedBox(height: 24),
 
                   // 就寝・起床時刻
@@ -412,6 +442,87 @@ class _OnboardingSleepHabitsScreenState extends State<OnboardingSleepHabitsScree
           ),
         );
       }).toList(),
+    );
+  }
+
+  Widget _buildSatisfactionScale() {
+    return Column(
+      children: [
+        // スケールラベル
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '非常に不満',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.grey[600],
+              ),
+            ),
+            Text(
+              '非常に満足',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // 5段階評価のボタン
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: List.generate(5, (index) {
+            final value = index + 1;
+            final isSelected = _sleepQualitySatisfaction == value;
+            return InkWell(
+              onTap: () {
+                setState(() {
+                  _sleepQualitySatisfaction = value;
+                });
+              },
+              borderRadius: BorderRadius.circular(25),
+              child: Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected ? AppTheme.primaryColor : Colors.grey[300]!,
+                    width: isSelected ? 2 : 1,
+                  ),
+                  color: isSelected ? AppTheme.primaryColor : Colors.transparent,
+                ),
+                child: Center(
+                  child: Text(
+                    value.toString(),
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.grey[600],
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+        const SizedBox(height: 8),
+        // 数値ラベル
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: List.generate(5, (index) {
+            return SizedBox(
+              width: 50,
+              child: Text(
+                (index + 1).toString(),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.grey[500],
+                ),
+              ),
+            );
+          }),
+        ),
+      ],
     );
   }
 }

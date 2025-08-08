@@ -75,16 +75,24 @@ class _OnboardingWelcomeScreenState extends State<OnboardingWelcomeScreen> {
                     ),
                     const SizedBox(height: 40),
                     
-                    // アプリの説明
+                    // イントロダクション
                     Text(
-                      'より良い睡眠習慣を身につけて、\n健康的な生活を送りましょう',
-                      style: Theme.of(context).textTheme.headlineSmall,
+                      'ようこそ！',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'よりパーソナルな睡眠分析のために、あなたのことを少しだけ教えてください。',
+                      style: Theme.of(context).textTheme.bodyLarge,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'あなたの睡眠パターンを記録・分析し、\n質の高い睡眠をサポートします',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      'アンケートは2分ほどで完了します。ご協力いただいた情報は、睡眠改善の研究目的でのみ、個人が特定されない形で利用させていただきます。',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.grey[600],
                       ),
                       textAlign: TextAlign.center,

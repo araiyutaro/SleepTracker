@@ -22,7 +22,7 @@ class _OnboardingBasicInfoScreenState extends State<OnboardingBasicInfoScreen> {
 
   // 年齢グループの選択肢
   final List<String> _ageGroups = [
-    '10代以下',
+    '10代',
     '20代',
     '30代',
     '40代',
@@ -40,11 +40,11 @@ class _OnboardingBasicInfoScreenState extends State<OnboardingBasicInfoScreen> {
 
   // 職業の選択肢
   final List<String> _occupations = [
-    '会社員（デスクワーク）',
-    '会社員（現場作業）',
-    'シフト勤務',
-    '自営業・フリーランス',
     '学生',
+    '会社員（デスクワーク中心）',
+    '会社員（身体労働中心）',
+    '会社員（シフト勤務・夜勤あり）',
+    '自営業・フリーランス',
     '主婦・主夫',
     'その他',
   ];
@@ -76,14 +76,14 @@ class _OnboardingBasicInfoScreenState extends State<OnboardingBasicInfoScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'あなたのことを教えてください',
+                    '① あなたについて（基本属性）',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'より良い睡眠分析のために、基本的な情報を教えてください',
+                    '分析の基本的な軸となる属性です。後のデータ分析で、年代や就労形態による睡眠パターンの違いを比較できます。',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Colors.grey[600],
                     ),
@@ -91,7 +91,7 @@ class _OnboardingBasicInfoScreenState extends State<OnboardingBasicInfoScreen> {
                   const SizedBox(height: 24),
 
                   // 年齢グループ選択
-                  _buildSectionTitle('年齢', isRequired: true),
+                  _buildSectionTitle('質問1. あなたの年代を教えてください。', isRequired: true),
                   const SizedBox(height: 8),
                   _buildSingleChoiceSection(_ageGroups, _selectedAgeGroup, (value) {
                     setState(() {
@@ -101,7 +101,7 @@ class _OnboardingBasicInfoScreenState extends State<OnboardingBasicInfoScreen> {
                   const SizedBox(height: 20),
 
                   // 性別選択
-                  _buildSectionTitle('性別', isRequired: true),
+                  _buildSectionTitle('質問2. あなたの性別を教えてください。', isRequired: true),
                   const SizedBox(height: 8),
                   _buildSingleChoiceSection(_genders, _selectedGender, (value) {
                     setState(() {
@@ -111,7 +111,7 @@ class _OnboardingBasicInfoScreenState extends State<OnboardingBasicInfoScreen> {
                   const SizedBox(height: 20),
 
                   // 職業選択
-                  _buildSectionTitle('職業', isRequired: false),
+                  _buildSectionTitle('質問3. あなたの現在の職業・状況に最も近いものを教えてください。', isRequired: false),
                   const SizedBox(height: 8),
                   _buildSingleChoiceSection(_occupations, _selectedOccupation, (value) {
                     setState(() {
