@@ -21,7 +21,7 @@ class DatabaseService {
 
       return await openDatabase(
         path,
-        version: 5,
+        version: 6,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onOpen: (db) async {
@@ -74,7 +74,11 @@ class DatabaseService {
           created_at INTEGER NOT NULL,
           updated_at INTEGER NOT NULL,
           notification_settings_json TEXT,
-          is_onboarding_completed INTEGER NOT NULL DEFAULT 0
+          is_onboarding_completed INTEGER NOT NULL DEFAULT 0,
+          sleep_literacy_score INTEGER,
+          sleep_literacy_test_date INTEGER,
+          sleep_literacy_test_duration_minutes INTEGER,
+          sleep_literacy_category_scores_json TEXT
         )
       ''');
 
@@ -237,6 +241,15 @@ class DatabaseService {
     if (oldVersion < 5) {
       await db.execute('ALTER TABLE sleep_records ADD COLUMN wake_quality INTEGER');
       print('Database: Added wake_quality column to sleep_records table');
+    }
+    
+    // バージョン5→6: 睡眠リテラシーテスト関連カラムを追加
+    if (oldVersion < 6) {
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN sleep_literacy_score INTEGER');
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN sleep_literacy_test_date INTEGER');
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN sleep_literacy_test_duration_minutes INTEGER');
+      await db.execute('ALTER TABLE user_profiles ADD COLUMN sleep_literacy_category_scores_json TEXT');
+      print('Database: Added sleep literacy test columns to user_profiles table');
     }
   }
 

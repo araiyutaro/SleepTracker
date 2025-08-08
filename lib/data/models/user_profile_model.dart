@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../domain/entities/user_profile.dart';
 
@@ -24,6 +25,10 @@ class UserProfileModel {
   final int updatedAtEpoch;
   final String? notificationSettingsJson;
   final int isOnboardingCompleted;
+  final int? sleepLiteracyScore;
+  final int? sleepLiteracyTestDateEpoch;
+  final int? sleepLiteracyTestDurationMinutes;
+  final String? sleepLiteracyCategoryScoresJson;
 
   UserProfileModel({
     required this.id,
@@ -48,6 +53,10 @@ class UserProfileModel {
     required this.updatedAtEpoch,
     this.notificationSettingsJson,
     required this.isOnboardingCompleted,
+    this.sleepLiteracyScore,
+    this.sleepLiteracyTestDateEpoch,
+    this.sleepLiteracyTestDurationMinutes,
+    this.sleepLiteracyCategoryScoresJson,
   });
 
   factory UserProfileModel.fromEntity(UserProfile entity) {
@@ -74,6 +83,12 @@ class UserProfileModel {
       updatedAtEpoch: entity.updatedAt.millisecondsSinceEpoch,
       notificationSettingsJson: _notificationSettingsToJson(entity.notificationSettings),
       isOnboardingCompleted: entity.isOnboardingCompleted ? 1 : 0,
+      sleepLiteracyScore: entity.sleepLiteracyScore,
+      sleepLiteracyTestDateEpoch: entity.sleepLiteracyTestDate?.millisecondsSinceEpoch,
+      sleepLiteracyTestDurationMinutes: entity.sleepLiteracyTestDurationMinutes,
+      sleepLiteracyCategoryScoresJson: entity.sleepLiteracyCategoryScores != null 
+          ? json.encode(entity.sleepLiteracyCategoryScores) 
+          : null,
     );
   }
 
@@ -101,6 +116,18 @@ class UserProfileModel {
       updatedAt: DateTime.fromMillisecondsSinceEpoch(updatedAtEpoch),
       notificationSettings: _notificationSettingsFromJson(notificationSettingsJson),
       isOnboardingCompleted: isOnboardingCompleted == 1,
+      sleepLiteracyScore: sleepLiteracyScore,
+      sleepLiteracyTestDate: sleepLiteracyTestDateEpoch != null 
+          ? DateTime.fromMillisecondsSinceEpoch(sleepLiteracyTestDateEpoch!) 
+          : null,
+      sleepLiteracyTestDurationMinutes: sleepLiteracyTestDurationMinutes,
+      sleepLiteracyCategoryScores: sleepLiteracyCategoryScoresJson != null 
+          ? Map<String, Map<String, int>>.from(
+              json.decode(sleepLiteracyCategoryScoresJson!).map(
+                (key, value) => MapEntry(key, Map<String, int>.from(value))
+              )
+            ) 
+          : null,
     );
   }
 
@@ -128,6 +155,10 @@ class UserProfileModel {
       'updated_at': updatedAtEpoch,
       'notification_settings_json': notificationSettingsJson,
       'is_onboarding_completed': isOnboardingCompleted,
+      'sleep_literacy_score': sleepLiteracyScore,
+      'sleep_literacy_test_date': sleepLiteracyTestDateEpoch,
+      'sleep_literacy_test_duration_minutes': sleepLiteracyTestDurationMinutes,
+      'sleep_literacy_category_scores_json': sleepLiteracyCategoryScoresJson,
     };
   }
 
@@ -155,6 +186,10 @@ class UserProfileModel {
       updatedAtEpoch: map['updated_at'] as int,
       notificationSettingsJson: map['notification_settings_json'] as String?,
       isOnboardingCompleted: map['is_onboarding_completed'] as int? ?? 0,
+      sleepLiteracyScore: map['sleep_literacy_score'] as int?,
+      sleepLiteracyTestDateEpoch: map['sleep_literacy_test_date'] as int?,
+      sleepLiteracyTestDurationMinutes: map['sleep_literacy_test_duration_minutes'] as int?,
+      sleepLiteracyCategoryScoresJson: map['sleep_literacy_category_scores_json'] as String?,
     );
   }
 
