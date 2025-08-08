@@ -1,0 +1,78 @@
+<svg width="1024" height="500" viewBox="0 0 1024 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0D47A1;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1565C0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#311B92;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Star pattern -->
+    <pattern id="stars" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+      <circle cx="10" cy="10" r="1" fill="#FFFFFF" opacity="0.5"/>
+      <circle cx="40" cy="25" r="1.5" fill="#FFFFFF" opacity="0.7"/>
+      <circle cx="70" cy="50" r="1" fill="#FFFFFF" opacity="0.6"/>
+      <circle cx="25" cy="70" r="1.2" fill="#FFFFFF" opacity="0.5"/>
+      <circle cx="85" cy="85" r="1" fill="#FFFFFF" opacity="0.8"/>
+    </pattern>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1024" height="500" fill="url(#bgGradient)"/>
+  <rect width="1024" height="500" fill="url(#stars)" opacity="0.3"/>
+  
+  <!-- Moon -->
+  <circle cx="850" cy="150" r="60" fill="#FFC107" opacity="0.9"/>
+  <circle cx="870" cy="140" r="55" fill="url(#bgGradient)" opacity="0.8"/>
+  
+  <!-- App Icon or Phone Mockup (left side) -->
+  <g transform="translate(80, 150)">
+    <!-- Phone frame -->
+    <rect x="0" y="0" width="200" height="400" rx="20" fill="#000000" opacity="0.3"/>
+    <rect x="5" y="5" width="190" height="390" rx="15" fill="#FFFFFF"/>
+    
+    <!-- Screen content -->
+    <rect x="15" y="50" width="170" height="300" rx="5" fill="#F5F5F5"/>
+    
+    <!-- Mini moon icon -->
+    <circle cx="100" cy="120" r="30" fill="#FFC107"/>
+    
+    <!-- Sleep data visualization -->
+    <rect x="30" y="180" width="140" height="10" rx="5" fill="#1976D2" opacity="0.8"/>
+    <rect x="30" y="200" width="120" height="10" rx="5" fill="#1976D2" opacity="0.6"/>
+    <rect x="30" y="220" width="130" height="10" rx="5" fill="#1976D2" opacity="0.7"/>
+    
+    <!-- Bottom navigation hint -->
+    <rect x="15" y="340" width="170" height="40" fill="#1976D2" opacity="0.1"/>
+  </g>
+  
+  <!-- Main Text (center) -->
+  <text x="512" y="200" font-family="Noto Sans JP, Arial, sans-serif" font-size="48" font-weight="bold" fill="#FFFFFF" text-anchor="middle">より良い睡眠習慣を、科学的に。</text>
+  <text x="512" y="250" font-family="Arial, sans-serif" font-size="32" fill="#FFC107" text-anchor="middle">Sleep Tracker</text>
+  
+  <!-- Feature Icons (right side) -->
+  <g transform="translate(750, 320)">
+    <!-- Feature 1: Easy Recording -->
+    <g transform="translate(0, 0)">
+      <circle cx="0" cy="0" r="20" fill="#FFFFFF" opacity="0.2"/>
+      <text x="30" y="5" font-family="Noto Sans JP, Arial, sans-serif" font-size="18" fill="#FFFFFF">✓ 簡単記録</text>
+    </g>
+    
+    <!-- Feature 2: Sleep Analysis -->
+    <g transform="translate(0, 50)">
+      <circle cx="0" cy="0" r="20" fill="#FFFFFF" opacity="0.2"/>
+      <text x="30" y="5" font-family="Noto Sans JP, Arial, sans-serif" font-size="18" fill="#FFFFFF">✓ 睡眠分析</text>
+    </g>
+    
+    <!-- Feature 3: Literacy Test -->
+    <g transform="translate(0, 100)">
+      <circle cx="0" cy="0" r="20" fill="#FFFFFF" opacity="0.2"/>
+      <text x="30" y="5" font-family="Noto Sans JP, Arial, sans-serif" font-size="18" fill="#FFFFFF">✓ リテラシーテスト</text>
+    </g>
+  </g>
+  
+  <!-- Decorative elements -->
+  <circle cx="400" cy="100" r="3" fill="#FFFFFF" opacity="0.8"/>
+  <circle cx="450" cy="120" r="2" fill="#FFFFFF" opacity="0.6"/>
+  <circle cx="600" cy="400" r="3" fill="#FFFFFF" opacity="0.7"/>
+</svg>
