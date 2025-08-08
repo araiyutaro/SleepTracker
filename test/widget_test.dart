@@ -8,9 +8,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sleep/app.dart';
+import 'package:sleep/config/flavor_config.dart';
 
 void main() {
   testWidgets('Sleep app starts up correctly', (WidgetTester tester) async {
+    // Initialize FlavorConfig for testing
+    FlavorConfig.initialize(Flavor.dev);
+    
     // Build our app and trigger a frame.
     await tester.pumpWidget(const SleepApp());
     await tester.pump();
