@@ -6,7 +6,7 @@ import '../main_screen.dart';
 import '../../providers/user_provider.dart';
 import '../../../domain/entities/user_profile.dart';
 import 'onboarding_basic_info_screen.dart';
-import '../../../utils/flavor_config.dart';
+import '../../../config/flavor_config.dart';
 
 class OnboardingWelcomeScreen extends StatefulWidget {
   const OnboardingWelcomeScreen({Key? key}) : super(key: key);

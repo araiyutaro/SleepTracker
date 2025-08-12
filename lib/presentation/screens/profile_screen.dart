@@ -13,7 +13,7 @@ import '../../domain/entities/user_profile.dart';
 import '../../services/export_service.dart';
 import '../../services/analytics_service.dart';
 import '../../utils/dummy_data_generator.dart';
-import '../../utils/flavor_config.dart';
+import '../../config/flavor_config.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
