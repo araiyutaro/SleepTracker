@@ -6,6 +6,7 @@ import '../main_screen.dart';
 import '../../providers/user_provider.dart';
 import '../../../domain/entities/user_profile.dart';
 import 'onboarding_basic_info_screen.dart';
+import '../../../utils/flavor_config.dart';
 
 class OnboardingWelcomeScreen extends StatefulWidget {
   const OnboardingWelcomeScreen({Key? key}) : super(key: key);
@@ -38,15 +39,16 @@ class _OnboardingWelcomeScreenState extends State<OnboardingWelcomeScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
-          // デバッグ用ダミーユーザー作成ボタン
-          IconButton(
-            onPressed: _createDummyUserAndSkip,
-            icon: Icon(
-              Icons.bug_report,
-              color: Colors.grey[400],
+          // デバッグ用ダミーユーザー作成ボタン（dev版のみ）
+          if (FlavorConfig.isDev)
+            IconButton(
+              onPressed: _createDummyUserAndSkip,
+              icon: Icon(
+                Icons.bug_report,
+                color: Colors.grey[400],
+              ),
+              tooltip: 'デバッグ: ダミーユーザー作成',
             ),
-            tooltip: 'デバッグ: ダミーユーザー作成',
-          ),
         ],
       ),
       body: SafeArea(
