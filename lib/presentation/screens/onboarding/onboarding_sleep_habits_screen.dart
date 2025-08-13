@@ -38,10 +38,10 @@ class _OnboardingSleepHabitsScreenState extends State<OnboardingSleepHabitsScree
   final List<String> _sleepProblems = [
     '寝つきが悪い',
     '夜中に何度も目が覚める',
-    '朝早くに目が覚めて、その後眠れない',
-    '日中に強い眠気を感じる',
-    '朝、すっきりと起きられない',
-    '睡眠時間が足りていないと感じる',
+    '早朝に目が覚める',
+    '日中の強い眠気',
+    '朝の目覚めが悪い',
+    '睡眠時間不足',
     '特に悩みはない',
   ];
 
@@ -107,14 +107,14 @@ class _OnboardingSleepHabitsScreenState extends State<OnboardingSleepHabitsScree
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '② あなたの睡眠について（主観評価と悩み）',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    '② あなたの睡眠について',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '被験者が感じている「睡眠の質」や具体的な悩みを把握します。アプリで測定する客観データと、本人の主観的な悩みの関係性を分析できます。',
+                    '睡眠の質や悩みについてお聞かせください',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Colors.grey[600],
                     ),
@@ -128,7 +128,14 @@ class _OnboardingSleepHabitsScreenState extends State<OnboardingSleepHabitsScree
                   const SizedBox(height: 24),
 
                   // 質問5: 睡眠の悩み
-                  _buildSectionTitle('質問5. あなたが感じている睡眠の悩みに、あてはまるものをすべて選んでください。（複数選択可）', isRequired: true),
+                  _buildSectionTitle('質問5. あなたが感じている睡眠の悩みに、あてはまるものをすべて選んでください。', isRequired: true),
+                  const SizedBox(height: 4),
+                  Text(
+                    '（複数選択可）',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   _buildMultiChoiceSection(_sleepProblems, _selectedSleepProblems, (problems) {
                     setState(() {
@@ -250,11 +257,14 @@ class _OnboardingSleepHabitsScreenState extends State<OnboardingSleepHabitsScree
 
   Widget _buildSectionTitle(String title, {required bool isRequired}) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
+        Expanded(
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         if (isRequired) ...[
@@ -449,22 +459,33 @@ class _OnboardingSleepHabitsScreenState extends State<OnboardingSleepHabitsScree
     return Column(
       children: [
         // スケールラベル
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '非常に不満',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                child: Text(
+                  '非常に不満',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
-            ),
-            Text(
-              '非常に満足',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
+              Flexible(
+                child: Text(
+                  '非常に満足',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: 12),
         // 5段階評価のボタン
@@ -481,8 +502,8 @@ class _OnboardingSleepHabitsScreenState extends State<OnboardingSleepHabitsScree
               },
               borderRadius: BorderRadius.circular(25),
               child: Container(
-                width: 50,
-                height: 50,
+                width: 45,
+                height: 45,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
