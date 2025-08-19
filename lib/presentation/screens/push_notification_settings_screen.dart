@@ -5,6 +5,7 @@ import '../providers/user_provider.dart';
 import '../../services/notification_service.dart';
 import '../../services/analytics_service.dart';
 import '../../services/firebase_service.dart';
+import '../../config/flavor_config.dart';
 
 class PushNotificationSettingsScreen extends StatefulWidget {
   const PushNotificationSettingsScreen({super.key});
@@ -342,6 +343,11 @@ class _PushNotificationSettingsScreenState extends State<PushNotificationSetting
   }
 
   Widget _buildTestSection() {
+    // dev版のみテスト機能を表示
+    if (!FlavorConfig.isDev) {
+      return const SizedBox.shrink();
+    }
+    
     return Card(
       elevation: 2,
       child: Padding(
