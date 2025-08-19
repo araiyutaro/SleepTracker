@@ -24,31 +24,42 @@ flutter build appbundle --release --flavor prod -t lib/main_prod.dart
 
 ### 開発版
 ```bash
-flutter build ios --release --flavor dev -t lib/main_dev.dart
+flutter build ios --release -t lib/main_dev.dart
 ```
 
 ### 本番版
 ```bash
-flutter build ios --release --flavor prod -t lib/main_prod.dart
+flutter build ios --release -t lib/main_prod.dart
 ```
+
+注: iOSではflavorオプションは使用しません。エントリーポイント（-t）の指定のみで環境を切り替えます。
 
 ## 実行コマンド（開発時）
 
 ### 開発版で実行
 ```bash
+# Android
 flutter run --flavor dev -t lib/main_dev.dart
+
+# iOS
+flutter run -t lib/main_dev.dart
 ```
 
 ### 本番版で実行
 ```bash
+# Android
 flutter run --flavor prod -t lib/main_prod.dart
+
+# iOS
+flutter run -t lib/main_prod.dart
 ```
 
 ## 注意事項
 
 1. **エントリーポイントの指定が必須**: `-t lib/main_xxx.dart`を必ず指定してください
-2. **Flavorの指定が必須**: `--flavor dev`または`--flavor prod`を必ず指定してください
-3. **本番版では以下の機能が無効化されます**:
+2. **Androidではflavorの指定が必須**: `--flavor dev`または`--flavor prod`を必ず指定してください
+3. **iOSではflavorは不要**: エントリーポイントの指定のみで環境を切り替えます
+4. **本番版では以下の機能が無効化されます**:
    - ダミーユーザー作成ボタン（オンボーディング画面）
    - デモデータ追加機能（プロフィール画面）
 
