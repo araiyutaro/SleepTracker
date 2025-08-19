@@ -27,7 +27,6 @@ class _OnboardingSleepHabitsScreenState extends State<OnboardingSleepHabitsScree
   TimeOfDay? _weekendBedtime;
   TimeOfDay? _weekendWakeTime;
   
-  List<String> _selectedConcerns = [];
   String? _caffeineHabit;
   String? _alcoholHabit;
   String? _exerciseHabit;
@@ -45,17 +44,6 @@ class _OnboardingSleepHabitsScreenState extends State<OnboardingSleepHabitsScree
     '特に悩みはない',
   ];
 
-  // 旧睡眠の悩みの選択肢（保持）
-  final List<String> _sleepConcerns = [
-    '寝つきが悪い',
-    '夜中に目が覚める',
-    '朝早く目が覚めてしまう',
-    '朝起きるのが辛い',
-    '日中の眠気',
-    '睡眠時間が短い',
-    '睡眠の質が悪い',
-    '特に悩みはない',
-  ];
 
   // 習慣の選択肢
   final List<String> _habitOptions = [
@@ -162,16 +150,6 @@ class _OnboardingSleepHabitsScreenState extends State<OnboardingSleepHabitsScree
                   }),
                   const SizedBox(height: 24),
 
-                  // 睡眠の悩み
-                  _buildSectionTitle('睡眠に関する主な悩み', isRequired: true),
-                  const SizedBox(height: 8),
-                  _buildMultiChoiceSection(_sleepConcerns, _selectedConcerns, (concerns) {
-                    setState(() {
-                      _selectedConcerns = concerns;
-                    });
-                  }),
-                  const SizedBox(height: 20),
-
                   // カフェイン摂取習慣
                   _buildSectionTitle('カフェイン摂取習慣', isRequired: false),
                   const SizedBox(height: 8),
@@ -224,7 +202,7 @@ class _OnboardingSleepHabitsScreenState extends State<OnboardingSleepHabitsScree
                         weekdayWakeTime: _weekdayWakeTime!,
                         weekendBedtime: _weekendBedtime!,
                         weekendWakeTime: _weekendWakeTime!,
-                        sleepConcerns: _selectedConcerns,
+                        sleepConcerns: _selectedSleepProblems,
                         caffeineHabit: _caffeineHabit,
                         alcoholHabit: _alcoholHabit,
                         exerciseHabit: _exerciseHabit,
