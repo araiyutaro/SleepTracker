@@ -116,12 +116,7 @@ class WidgetService {
     try {
       final widgetData = await generateWidgetData();
       
-      debugPrint('Widget data updated:');
-      debugPrint('Last sleep: ${widgetData.lastSleepDate}');
-      debugPrint('Duration: ${widgetData.lastSleepDuration}');
-      debugPrint('Quality: ${widgetData.sleepQuality}');
-      debugPrint('Weekly avg: ${widgetData.weeklyAverage}');
-      debugPrint('Total sessions: ${widgetData.totalSessions}');
+      // Widget data updated successfully
 
     } catch (e) {
       debugPrint('Failed to update widget: $e');

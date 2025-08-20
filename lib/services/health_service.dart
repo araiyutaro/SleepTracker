@@ -15,9 +15,8 @@ class HealthService {
       _health = Health();
       await _health.configure();
       _isInitialized = true;
-      debugPrint('HealthService: Initialized successfully');
     } catch (e) {
-      debugPrint('HealthService: Initialization failed: $e');
+      // Initialization failed - continue without health integration
     }
   }
 
@@ -25,7 +24,6 @@ class HealthService {
   Future<bool> requestPermissions() async {
     try {
       if (!_isInitialized) {
-        debugPrint('HealthService: Initializing before permission request...');
         await initialize();
       }
 
@@ -47,39 +45,17 @@ class HealthService {
         HealthDataType.SLEEP_REM,
       ];
       
-      debugPrint('HealthService: Requesting permissions for ${types.length} health data types');
-      
       // プラットフォームサポート確認
       bool isSupported = Health().isDataTypeAvailable(HealthDataType.SLEEP_ASLEEP);
-      debugPrint('HealthService: Sleep data type availability: $isSupported');
       
       if (!isSupported) {
-        debugPrint('HealthService: Health data types not supported on this platform');
         return false;
       }
       
-      debugPrint('HealthService: Requesting authorization from user...');
       bool requested = await _health.requestAuthorization(types, permissions: permissions);
-      debugPrint('HealthService: Permission request result: $requested');
-      
-      // 各権限の詳細確認（エラーが発生しても継続）
-      try {
-        for (int i = 0; i < types.length; i++) {
-          try {
-            bool? hasPermission = await _health.hasPermissions([types[i]], permissions: [permissions[i]]);
-            debugPrint('HealthService: Permission for ${types[i]}: $hasPermission');
-          } catch (e) {
-            debugPrint('HealthService: Failed to check permission for ${types[i]}: $e');
-          }
-        }
-      } catch (e) {
-        debugPrint('HealthService: Error during permission verification: $e');
-      }
       
       return requested;
     } catch (e, stackTrace) {
-      debugPrint('HealthService: Permission request failed (アプリは継続します): $e');
-      debugPrint('HealthService: Stack trace: $stackTrace');
       return false;
     }
   }
@@ -87,7 +63,6 @@ class HealthService {
   /// 権限確認
   Future<bool> hasPermissions() async {
     if (!_isInitialized) {
-      debugPrint('HealthService: Service not initialized');
       return false;
     }
 
@@ -110,21 +85,10 @@ class HealthService {
         HealthDataType.SLEEP_REM,
       ];
       
-      debugPrint('HealthService: Checking permissions for ${types.length} health data types');
-      
       bool? hasPermissions = await _health.hasPermissions(types, permissions: permissions);
-      debugPrint('HealthService: Has permissions result: $hasPermissions');
-      
-      // 各権限の詳細確認
-      for (int i = 0; i < types.length; i++) {
-        bool? hasPermission = await _health.hasPermissions([types[i]], permissions: [permissions[i]]);
-        debugPrint('HealthService: Has permission for ${types[i]}: $hasPermission');
-      }
       
       return hasPermissions ?? false;
     } catch (e, stackTrace) {
-      debugPrint('HealthService: Permission check failed: $e');
-      debugPrint('HealthService: Stack trace: $stackTrace');
       return false;
     }
   }
@@ -136,25 +100,18 @@ class HealthService {
     HealthDataType type = HealthDataType.SLEEP_ASLEEP,
   }) async {
     if (!_isInitialized) {
-      debugPrint('HealthService: Not initialized, cannot write sleep data');
       return false;
     }
 
     try {
-      debugPrint('HealthService: Writing sleep data - Type: $type, Bed: $bedTime, Wake: $wakeTime');
-      
       bool success = await _health.writeHealthData(
         value: 0, // 睡眠の場合、値は使用されない
         type: type,
         startTime: bedTime,
         endTime: wakeTime,
       );
-
-      debugPrint('HealthService: Sleep data write result: $success');
       return success;
     } catch (e, stackTrace) {
-      debugPrint('HealthService: Failed to write sleep data: $e');
-      debugPrint('HealthService: Stack trace: $stackTrace');
       return false;
     }
   }
@@ -169,12 +126,10 @@ class HealthService {
     Duration? awakeDuration,
   }) async {
     if (!_isInitialized) {
-      debugPrint('HealthService: Not initialized, cannot write sleep stages data');
       return false;
     }
 
     try {
-      debugPrint('HealthService: Writing sleep stages data');
       int successCount = 0;
       int totalWrites = 0;
 
@@ -187,9 +142,8 @@ class HealthService {
           type: HealthDataType.SLEEP_ASLEEP,
         );
         if (mainSleepSuccess) successCount++;
-        debugPrint('HealthService: Main sleep write: $mainSleepSuccess');
       } catch (e) {
-        debugPrint('HealthService: Main sleep write failed: $e');
+        // Main sleep write failed
       }
 
       // ベッドタイム
@@ -201,9 +155,8 @@ class HealthService {
           type: HealthDataType.SLEEP_IN_BED,
         );
         if (bedTimeSuccess) successCount++;
-        debugPrint('HealthService: Bed time write: $bedTimeSuccess');
       } catch (e) {
-        debugPrint('HealthService: Bed time write failed: $e');
+        // Bed time write failed
       }
 
       // 深い睡眠（オプション）
@@ -218,9 +171,8 @@ class HealthService {
             type: HealthDataType.SLEEP_DEEP,
           );
           if (deepSleepSuccess) successCount++;
-          debugPrint('HealthService: Deep sleep write: $deepSleepSuccess');
         } catch (e) {
-          debugPrint('HealthService: Deep sleep write failed: $e');
+          // Deep sleep write failed
         }
       }
 
@@ -236,9 +188,8 @@ class HealthService {
             type: HealthDataType.SLEEP_LIGHT,
           );
           if (lightSleepSuccess) successCount++;
-          debugPrint('HealthService: Light sleep write: $lightSleepSuccess');
         } catch (e) {
-          debugPrint('HealthService: Light sleep write failed: $e');
+          // Light sleep write failed
         }
       }
 
@@ -256,18 +207,14 @@ class HealthService {
             type: HealthDataType.SLEEP_REM,
           );
           if (remSleepSuccess) successCount++;
-          debugPrint('HealthService: REM sleep write: $remSleepSuccess');
         } catch (e) {
-          debugPrint('HealthService: REM sleep write failed: $e');
+          // REM sleep write failed
         }
       }
 
       bool overallSuccess = successCount > 0; // 少なくとも1つ成功していればOK
-      debugPrint('HealthService: Sleep stages write completed: $successCount/$totalWrites successful, overall: $overallSuccess');
       return overallSuccess;
     } catch (e, stackTrace) {
-      debugPrint('HealthService: Failed to write sleep stages data: $e');
-      debugPrint('HealthService: Stack trace: $stackTrace');
       return false;
     }
   }
@@ -281,7 +228,6 @@ class HealthService {
         'lastUpdated': DateTime.now(),
       };
     } catch (e) {
-      debugPrint('HealthService: Failed to get today health summary: $e');
       return {
         'sleepData': <HealthDataPoint>[],
         'lastUpdated': DateTime.now(),
@@ -298,12 +244,9 @@ class HealthService {
       
       // 基本的な睡眠データタイプがサポートされているか確認
       bool sleepSupported = Health().isDataTypeAvailable(HealthDataType.SLEEP_ASLEEP);
-      debugPrint('HealthService: Sleep data type supported: $sleepSupported');
       
       return sleepSupported;
     } catch (e, stackTrace) {
-      debugPrint('HealthService: Platform support check failed: $e');
-      debugPrint('HealthService: Stack trace: $stackTrace');
       return false;
     }
   }
