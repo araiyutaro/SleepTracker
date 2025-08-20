@@ -21,7 +21,7 @@ class DatabaseService {
 
       return await openDatabase(
         path,
-        version: 6,
+        version: 7,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onOpen: (db) async {
@@ -45,6 +45,7 @@ class DatabaseService {
           duration_minutes INTEGER,
           quality_score REAL,
           wake_quality INTEGER,
+          phone_usage_before_sleep INTEGER,
           movements_json TEXT,
           created_at INTEGER NOT NULL,
           sleep_stages_json TEXT
@@ -240,7 +241,6 @@ class DatabaseService {
     // バージョン4→5: 目覚めの質カラムを追加
     if (oldVersion < 5) {
       await db.execute('ALTER TABLE sleep_records ADD COLUMN wake_quality INTEGER');
-      print('Database: Added wake_quality column to sleep_records table');
     }
     
     // バージョン5→6: 睡眠リテラシーテスト関連カラムを追加
@@ -249,7 +249,11 @@ class DatabaseService {
       await db.execute('ALTER TABLE user_profiles ADD COLUMN sleep_literacy_test_date INTEGER');
       await db.execute('ALTER TABLE user_profiles ADD COLUMN sleep_literacy_test_duration_minutes INTEGER');
       await db.execute('ALTER TABLE user_profiles ADD COLUMN sleep_literacy_category_scores_json TEXT');
-      print('Database: Added sleep literacy test columns to user_profiles table');
+    }
+    
+    // バージョン6→7: 就寝前スマホ利用時間カラムを追加
+    if (oldVersion < 7) {
+      await db.execute('ALTER TABLE sleep_records ADD COLUMN phone_usage_before_sleep INTEGER');
     }
   }
 

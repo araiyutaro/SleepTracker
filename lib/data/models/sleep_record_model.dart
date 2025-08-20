@@ -7,6 +7,7 @@ class SleepRecordModel {
   final int? durationMinutes;
   final double? qualityScore;
   final int? wakeQuality;
+  final int? phoneUsageBeforeSleep; // 就寝前のスマホ利用時間（分）
   final String? movementsJson;
   final int createdAtEpoch;
   final String? sleepStagesJson;
@@ -18,6 +19,7 @@ class SleepRecordModel {
     this.durationMinutes,
     this.qualityScore,
     this.wakeQuality,
+    this.phoneUsageBeforeSleep,
     this.movementsJson,
     required this.createdAtEpoch,
     this.sleepStagesJson,
@@ -31,6 +33,7 @@ class SleepRecordModel {
       durationMinutes: entity.duration?.inMinutes,
       qualityScore: entity.qualityScore,
       wakeQuality: entity.wakeQuality,
+      phoneUsageBeforeSleep: entity.phoneUsageBeforeSleep,
       movementsJson: _movementsToJson(entity.movements),
       createdAtEpoch: entity.createdAt.millisecondsSinceEpoch,
       sleepStagesJson: _sleepStagesToJson(entity.sleepStages),
@@ -49,6 +52,7 @@ class SleepRecordModel {
           : null,
       qualityScore: qualityScore,
       wakeQuality: wakeQuality,
+      phoneUsageBeforeSleep: phoneUsageBeforeSleep,
       movements: _movementsFromJson(movementsJson),
       createdAt: DateTime.fromMillisecondsSinceEpoch(createdAtEpoch),
       sleepStages: _sleepStagesFromJson(sleepStagesJson),
@@ -63,6 +67,7 @@ class SleepRecordModel {
       'duration_minutes': durationMinutes,
       'quality_score': qualityScore,
       'wake_quality': wakeQuality,
+      'phone_usage_before_sleep': phoneUsageBeforeSleep,
       'movements_json': movementsJson,
       'created_at': createdAtEpoch,
       'sleep_stages_json': sleepStagesJson,
@@ -77,6 +82,7 @@ class SleepRecordModel {
       durationMinutes: map['duration_minutes'] as int?,
       qualityScore: map['quality_score'] as double?,
       wakeQuality: map['wake_quality'] as int?,
+      phoneUsageBeforeSleep: map['phone_usage_before_sleep'] as int?,
       movementsJson: map['movements_json'] as String?,
       createdAtEpoch: map['created_at'] as int,
       sleepStagesJson: map['sleep_stages_json'] as String?,

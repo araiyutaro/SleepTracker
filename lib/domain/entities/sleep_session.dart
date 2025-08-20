@@ -5,6 +5,7 @@ class SleepSession {
   final Duration? duration;
   final double? qualityScore;
   final int? wakeQuality; // 目覚めの質 (1-5段階)
+  final int? phoneUsageBeforeSleep; // 就寝前のスマホ利用時間（分）
   final List<MovementData> movements;
   final DateTime createdAt;
   final SleepStageData? sleepStages;
@@ -16,6 +17,7 @@ class SleepSession {
     this.duration,
     this.qualityScore,
     this.wakeQuality,
+    this.phoneUsageBeforeSleep,
     List<MovementData>? movements,
     DateTime? createdAt,
     this.sleepStages,
@@ -39,6 +41,7 @@ class SleepSession {
     Duration? duration,
     double? qualityScore,
     int? wakeQuality,
+    int? phoneUsageBeforeSleep,
     List<MovementData>? movements,
     DateTime? createdAt,
     SleepStageData? sleepStages,
@@ -50,6 +53,7 @@ class SleepSession {
       duration: duration ?? this.duration,
       qualityScore: qualityScore ?? this.qualityScore,
       wakeQuality: wakeQuality ?? this.wakeQuality,
+      phoneUsageBeforeSleep: phoneUsageBeforeSleep ?? this.phoneUsageBeforeSleep,
       movements: movements ?? this.movements,
       createdAt: createdAt ?? this.createdAt,
       sleepStages: sleepStages ?? this.sleepStages,
