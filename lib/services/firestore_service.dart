@@ -162,6 +162,7 @@ class FirestoreService {
         'duration': session.duration?.inMinutes,
         'qualityScore': session.qualityScore,
         'wakeQuality': session.wakeQuality,
+        'phoneUsageBeforeSleep': session.phoneUsageBeforeSleep, // 就寝前のスマホ利用時間（分）
         'isActive': session.isActive,
         'createdAt': FieldValue.serverTimestamp(),
       };
@@ -192,7 +193,6 @@ class FirestoreService {
           .doc(session.id)
           .set(sessionData);
       
-      debugPrint('✅ Sleep session saved to Firestore: ${session.id}');
       
       // 日次集計データも更新
       if (session.endTime != null) {
@@ -310,7 +310,6 @@ class FirestoreService {
         }
       });
       
-      debugPrint('✅ Daily aggregate updated for $date');
     } catch (e) {
       debugPrint('❌ Failed to update daily aggregate: $e');
     }
