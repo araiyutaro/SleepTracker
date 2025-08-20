@@ -152,14 +152,11 @@ class SleepProvider extends ChangeNotifier {
             ),
           );
         } catch (e) {
-          debugPrint('Failed to analyze sleep session: $e');
           // 分析に失敗してもセッション終了は継続
         }
       }
 
-      debugPrint('Attempting to end sleep session with ID: ${_currentSession?.id}');
       final endedSession = await _endSleepTracking.execute();
-      debugPrint('Sleep session ended successfully: ${endedSession.id}');
       
       // 目覚めの質入力ダイアログを表示
       if (context != null && endedSession != null) {
@@ -224,7 +221,6 @@ class SleepProvider extends ChangeNotifier {
   /// ヘルスキットに睡眠データを書き込み（オプション機能）
   Future<void> _writeToHealthKit(SleepSession session) async {
     try {
-      debugPrint('HealthKit書き込み開始');
       
       if (!_healthService.isInitialized) {
         debugPrint('HealthService not initialized, skipping HealthKit write');
@@ -287,9 +283,7 @@ class SleepProvider extends ChangeNotifier {
         remSleepDuration: remSleepDuration,
       );
 
-      if (success) {
-        debugPrint('Successfully wrote sleep data to HealthKit');
-        
+      if (success) {        
         // Analyticsイベント送信（エラーが発生してもアプリは継続）
         try {
           await AnalyticsService().logCustomEvent('health_data_exported', parameters: {
@@ -297,12 +291,9 @@ class SleepProvider extends ChangeNotifier {
             'data_type': 'sleep',
             'duration_minutes': session.duration?.inMinutes ?? 0,
           });
-          debugPrint('Analytics event logged successfully');
         } catch (analyticsError) {
-          debugPrint('Analytics event failed (not critical): $analyticsError');
+          // Analytics送信失敗は無視
         }
-      } else {
-        debugPrint('Failed to write sleep data to HealthKit');
       }
     } catch (e, stackTrace) {
       debugPrint('Error writing to HealthKit (アプリは継続します): $e');
@@ -400,16 +391,13 @@ class SleepProvider extends ChangeNotifier {
 
   Future<void> deleteSession(String sessionId) async {
     try {
-      debugPrint('Deleting sleep session: $sessionId');
       await _sleepRepository.deleteSession(sessionId);
-      debugPrint('Sleep session deleted successfully');
       
       // Analytics: 睡眠記録削除イベント
       await AnalyticsService().logSleepRecordDeleted();
       
       await loadRecentSessions();
     } catch (e) {
-      debugPrint('Failed to delete sleep session: $e');
       _errorMessage = 'セッションの削除に失敗しました: $e';
       notifyListeners();
     }
@@ -417,9 +405,7 @@ class SleepProvider extends ChangeNotifier {
 
   Future<void> updateSession(SleepSession session) async {
     try {
-      debugPrint('Updating sleep session: ${session.id}');
       await _sleepRepository.updateSession(session);
-      debugPrint('Sleep session updated successfully');
       
       // Analytics: 睡眠記録編集イベント
       await AnalyticsService().logSleepRecordEdited(
@@ -431,7 +417,6 @@ class SleepProvider extends ChangeNotifier {
       
       await loadRecentSessions();
     } catch (e) {
-      debugPrint('Failed to update sleep session: $e');
       _errorMessage = 'セッションの更新に失敗しました: $e';
       notifyListeners();
     }
@@ -439,9 +424,7 @@ class SleepProvider extends ChangeNotifier {
 
   Future<void> addManualSession(SleepSession session) async {
     try {
-      debugPrint('Adding manual sleep session: ${session.id}');
       await _sleepRepository.startSession(session);
-      debugPrint('Manual sleep session added successfully');
       
       // Analytics: 手動睡眠記録追加イベント
       await AnalyticsService().logManualSleepRecordAdded(
@@ -452,7 +435,6 @@ class SleepProvider extends ChangeNotifier {
       
       await loadRecentSessions();
     } catch (e) {
-      debugPrint('Failed to add manual sleep session: $e');
       _errorMessage = '手動セッションの追加に失敗しました: $e';
       notifyListeners();
     }
@@ -468,8 +450,8 @@ class SleepProvider extends ChangeNotifier {
         context: context,
         barrierDismissible: false,
         builder: (context) => WakeQualityDialog(
-          onRated: (int wakeQuality) {
-            _updateSessionWithWakeQuality(session, wakeQuality);
+          onRated: (int wakeQuality, int? phoneUsage) {
+            _updateSessionWithWakeQualityAndPhoneUsage(session, wakeQuality, phoneUsage);
             // Analytics: 目覚めの質評価
             AnalyticsService().logWakeQualityRated(wakeQuality);
           },
@@ -478,18 +460,21 @@ class SleepProvider extends ChangeNotifier {
     });
   }
 
-  Future<void> _updateSessionWithWakeQuality(SleepSession session, int wakeQuality) async {
+  Future<void> _updateSessionWithWakeQualityAndPhoneUsage(
+      SleepSession session, int wakeQuality, int? phoneUsage) async {
     try {
-      final updatedSession = session.copyWith(wakeQuality: wakeQuality);
+      final updatedSession = session.copyWith(
+        wakeQuality: wakeQuality,
+        phoneUsageBeforeSleep: phoneUsage,
+      );
       await _sleepRepository.updateSession(updatedSession);
       
       // 最新のセッションリストを再読み込み
       await loadRecentSessions();
       
-      debugPrint('Wake quality updated for session ${session.id}: $wakeQuality');
     } catch (e) {
-      debugPrint('Failed to update wake quality: $e');
-      _errorMessage = '目覚めの質の更新に失敗しました: $e';
+      debugPrint('Failed to update wake quality and phone usage: $e');
+      _errorMessage = '目覚めの質とスマホ利用時間の更新に失敗しました: $e';
       notifyListeners();
     }
   }

@@ -21,12 +21,15 @@ class _ManualSleepEntryDialogState extends State<ManualSleepEntryDialog> {
   DateTime _endTime = DateTime.now();
   double? _qualityScore;
   int? _wakeQuality;
+  int? _phoneUsageBeforeSleep;
   final _qualityController = TextEditingController();
+  final _phoneUsageController = TextEditingController();
   final _uuid = const Uuid();
 
   @override
   void dispose() {
     _qualityController.dispose();
+    _phoneUsageController.dispose();
     super.dispose();
   }
 
@@ -166,6 +169,32 @@ class _ManualSleepEntryDialogState extends State<ManualSleepEntryDialog> {
               ),
               const SizedBox(height: 8),
               _buildWakeQualitySelector(),
+              
+              const SizedBox(height: 16),
+              
+              // 就寝前のスマホ利用時間
+              Text(
+                '就寝前のスマホ利用時間 (分) - 任意',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _phoneUsageController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  hintText: '例: 30',
+                  suffixText: '分',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  final parsed = int.tryParse(value);
+                  if (parsed != null && parsed >= 0) {
+                    _phoneUsageBeforeSleep = parsed;
+                  } else if (value.isEmpty) {
+                    _phoneUsageBeforeSleep = null;
+                  }
+                },
+              ),
               
               const SizedBox(height: 24),
               
@@ -307,6 +336,7 @@ class _ManualSleepEntryDialogState extends State<ManualSleepEntryDialog> {
       duration: _endTime.difference(_startTime),
       qualityScore: _qualityScore,
       wakeQuality: _wakeQuality,
+      phoneUsageBeforeSleep: _phoneUsageBeforeSleep,
       movements: [],
       createdAt: DateTime.now(),
     );

@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import '../../core/themes/app_theme.dart';
 
 /// 目覚めの質評価ダイアログ
-/// 睡眠終了時に5段階で目覚めの質を評価
+/// 睡眠終了時に5段階で目覚めの質を評価し、就寝前のスマホ利用時間も記録
 class WakeQualityDialog extends StatefulWidget {
-  final Function(int) onRated;
+  final Function(int rating, int? phoneUsage) onRated;
   final int? initialRating;
+  final int? initialPhoneUsage;
 
   const WakeQualityDialog({
     Key? key,
     required this.onRated,
     this.initialRating,
+    this.initialPhoneUsage,
   }) : super(key: key);
 
   @override
@@ -19,11 +21,21 @@ class WakeQualityDialog extends StatefulWidget {
 
 class _WakeQualityDialogState extends State<WakeQualityDialog> {
   int? _selectedRating;
+  final TextEditingController _phoneUsageController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _selectedRating = widget.initialRating;
+    if (widget.initialPhoneUsage != null) {
+      _phoneUsageController.text = widget.initialPhoneUsage.toString();
+    }
+  }
+
+  @override
+  void dispose() {
+    _phoneUsageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -57,6 +69,8 @@ class _WakeQualityDialogState extends State<WakeQualityDialog> {
           _buildRatingSelector(),
           const SizedBox(height: 16),
           if (_selectedRating != null) _buildRatingDescription(),
+          const SizedBox(height: 24),
+          _buildPhoneUsageInput(),
         ],
       ),
       actions: [
@@ -67,7 +81,8 @@ class _WakeQualityDialogState extends State<WakeQualityDialog> {
         ElevatedButton(
           onPressed: _selectedRating != null
               ? () {
-                  widget.onRated(_selectedRating!);
+                  final phoneUsage = int.tryParse(_phoneUsageController.text);
+                  widget.onRated(_selectedRating!, phoneUsage);
                   Navigator.of(context).pop();
                 }
               : null,
@@ -211,5 +226,67 @@ class _WakeQualityDialogState extends State<WakeQualityDialog> {
       default:
         return '';
     }
+  }
+
+  Widget _buildPhoneUsageInput() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.smartphone,
+              color: AppTheme.primaryColor,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              '就寝前のスマホ利用時間',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _phoneUsageController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  hintText: '例: 30',
+                  suffixText: '分',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            TextButton(
+              onPressed: () {
+                _phoneUsageController.clear();
+              },
+              child: const Text('クリア'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          '昨晩、寝る前にスマートフォンを使用した時間を分単位で入力してください（任意）',
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey,
+          ),
+        ),
+      ],
+    );
   }
 }
