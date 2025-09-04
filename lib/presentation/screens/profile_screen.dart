@@ -1104,7 +1104,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 const Text(
                   '研究協力設定を変更したい場合は、以下までお問い合わせください：\n\n'
-                  '研究責任者：新井雄太郎',
+                  '研究責任者：山下裕子\n'
+                  '研究実施者：新井雄太郎',
                 ),
                 const SizedBox(height: 8),
                 GestureDetector(

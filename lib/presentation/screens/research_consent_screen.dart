@@ -120,7 +120,15 @@ class _ResearchConsentScreenState extends State<ResearchConsentScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '研究責任者：新井雄太郎',
+                              '研究責任者：山下裕子',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.primaryColor,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '研究実施者：新井雄太郎',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: AppTheme.primaryColor,
